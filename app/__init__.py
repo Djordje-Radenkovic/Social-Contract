@@ -1,4 +1,5 @@
 from flask import Flask
+import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
@@ -8,8 +9,11 @@ login_manager = LoginManager()
 def create_app():
     app = Flask(__name__)
 
-    # Load configuration from instance/config.py
-    app.config.from_pyfile('../instance/config.py')
+    # Load config from environment variables
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-secret-key')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///users.db')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS']= False
+
 
     # Initialize extensions
     db.init_app(app)
