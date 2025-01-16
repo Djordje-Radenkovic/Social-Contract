@@ -20,9 +20,8 @@ def signup():
         new_user = User(username=username, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
-        standalone = request.args.get('standalone', 'false')
         flash('Account created successfully!', 'success')
-        return redirect(url_for('main.login', standalone=standalone))
+        return redirect(url_for('main.login'))
     return render_template('signup.html')
 
 @main.route('/login', methods=['GET', 'POST'])

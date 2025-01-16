@@ -3,7 +3,7 @@
 {% block content %}
 <h1>Welcome, {{ user.username }}</h1>
 <p>Edit your profile below:</p>
-<form method="POST" action="{{ url_for('main.update_profile') }}">
+<form method="POST" action="{{ url_for('main.update_profile') }}?standalone=true">
     <label for="username">Username:</label>
     <input type="text" name="username" value="{{ user.username }}" required>
     <button type="submit">Update Profile</button>
