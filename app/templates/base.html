@@ -13,7 +13,7 @@
         // Ensure standalone mode persists on navigation
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
             document.querySelectorAll('a').forEach(link => {
-                const url = new URL(link.href);
+                const url = new URL(link.href, window.location.origin);
                 if (!url.searchParams.has('standalone')) {
                     url.searchParams.set('standalone', 'true');
                     link.href = url.toString();
