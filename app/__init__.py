@@ -2,6 +2,7 @@ from flask import Flask
 import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_migrate import Migrate
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -11,12 +12,13 @@ def create_app():
 
     # Load config from environment variables
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-secret-key')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///users.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///users.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS']= False
 
 
     # Initialize extensions
     db.init_app(app)
+    migrate = Migrate(app, db)  # Initialize Flask-Migrate
     login_manager.init_app(app)
     login_manager.login_view = 'main.login'  # Update with the correct login route if it's different
 
