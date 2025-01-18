@@ -8,10 +8,83 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 @login_required
-def home():
-    return render_template('home.html', user=current_user)
+def contracts():
+    stories = [
+        {"title": "Daily TikTok Post", "background_image": "/static/dummy_images/tiktok.jpg"},
+        {"title": "Hackathon", "background_image": "/static/dummy_images//hackathon.jpg"},
+        {"title": "Breakup Aid", "background_image": "/static/dummy_images//breakup.jpg"},
+        {"title": "Running Club", "background_image": "/static/dummy_images//running.jpg"},
+        {"title": "Digital Detox", "background_image": "/static/dummy_images//detox.jpg"},
+        {"title": "Gym Bros", "background_image": "/static/dummy_images//gym.jpg"},
+        {"title": "Meditation", "background_image": "/static/dummy_images//meditation.jpg"},
+    ]
 
-@main.route('/#/signup', methods=['GET', 'POST'])
+    contracts = [
+        {
+            "name": "Daily 5k run",
+            "progressInterval": "Week",
+            "progressIntervalsCompleted": 3,
+            'image': "static/dummy_images/detox.jpg",
+            'lastMessage': {
+                'sender':'Masha',
+                'senderImage': "static/dummy_images/Masha.jpg",
+                'messageReadByMe': False,
+                'timeReceived': '13:43',
+                'type': 'completion'
+            },
+            'tasks': [
+                {
+                    'name': 'Go for a run',
+                    'repsTotal': 3,
+                    'repsCompleted': 2,
+                    'intervalDeadline': 'by Sunday'
+                },
+                {   
+                    'name': 'Eat protein',
+                    'repsTotal': 1,
+                    'repsCompleted': 0,
+                    'intervalDeadline': 'Today'
+                },
+                {
+                    'name': 'Run a 10k',
+                    'repsTotal': 1,
+                    'repsCompleted': 1,
+                    'intervalDeadline': 'by Friday'
+                }
+            ]
+         },
+         {
+             'name': 'Digital Detox',
+             'progressInterval': 'Day',
+             'progressIntervalsCompleted': 31,
+             'image': 'static/dummy_images/detox.jpg',
+             'lastMessage': {
+                'sender':'Bogdan',
+                'senderImage': "static/dummy_images/Bogdan.jpg",
+                'messageReadByMe': True,
+                'timeReceived': '12:31',
+                'type': 'message'
+            },
+            'tasks': [
+                {
+                    'name': 'No Youtube',
+                    'repsTotal': 1,
+                    'repsCompleted': 0,
+                    'intervalDeadline': 'Today'
+                },
+                {
+                    'name': 'No podcasts',
+                    'repsTotal': 1,
+                    'repsCompleted': 1,
+                    'intervalDeadline': 'Today'
+                }
+            ]
+         }
+    ]
+
+    return render_template('contracts.html', user=current_user, stories=stories, contracts=contracts)
+
+@main.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
         username = request.form['username']
@@ -33,7 +106,7 @@ def login():
         if user and check_password_hash(user.password, password):
             login_user(user)
             flash('Logged in successfully!', 'success')
-            return redirect(url_for('main.home'))
+            return redirect(url_for('main.contracts'))
         else:
             flash('Invalid credentials, please try again.', 'danger')
     return render_template('login.html')

@@ -1,11 +1,32 @@
 {% extends "base.html" %}
 {% block title %}Profile{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
 {% block content %}
-<h1>Welcome, {{ user.username }}</h1>
-<p>Edit your profile below:</p>
-<form method="POST" action="{{ url_for('main.update_profile') }}?standalone=true">
-    <label for="username">Username:</label>
-    <input type="text" name="username" value="{{ user.username }}" required>
-    <button type="submit">Update Profile</button>
-</form>
+<div class="top-bar">
+    <h1>Your Profile</h1>
+</div>
+<div class="main-content">
+    <p>Welcome, {{ user.username }}!</p>
+    <form method="POST" action="{{ url_for('main.update_profile') }}">
+        <label for="username">Username:</label>
+        <input type="text" name="username" value="{{ user.username }}" required>
+        <button type="submit">Update</button>
+    </form>
+</div>
+<nav class="bottom-nav">
+    <a href="/" class="nav-item">
+        <i class="fa-solid fa-file-contract"></i>
+        <span>Contracts</span>
+    </a>
+    <a href="/progress" class="nav-item">
+        <i class="fa-solid fa-trophy"></i>
+        <span>Progress</span>
+    </a>
+    <a href="/profile" class="nav-item active">
+        <i class="fa-solid fa-gear"></i>
+        <span>Profile</span>
+    </a>
+</nav>
 {% endblock %}

@@ -1,0 +1,218 @@
+/* Top Bar */
+
+
+.top-bar {
+    display: flex;
+    justify-content: space-between; /* Space out items (title and button) */
+    align-items: center; /* Vertically center content */
+    padding: 10px; /* Add some padding around the bar */
+}
+
+
+
+.top-fixed {
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    z-index: 10000;
+    background-color: white;
+    transition: box-shadow 0.3s ease; /* Smooth transition for shadow effect */
+    box-shadow: none; /* No shadow initially */
+}
+
+
+
+.top-bar h1 {
+    flex: 1; /* Allow the h1 to take up available space */
+    text-align: center; /* Center the text within its space */
+    font-size: 18px; /* Adjust font size if needed */
+    margin: 0; /* Remove default margin */
+}
+
+.create-groupchat-btn {
+    border: none;
+    border-radius: 50%;
+    background-color: transparent;
+    font-size: 18px;
+}
+
+/* Main Content */
+.main-content {
+    padding: 15px;
+}
+
+.top-bar h1 {
+    color: black;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Stories Container */
+.stories-container {
+    padding: 10px;
+    overflow-x: auto;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border-bottom: 1px solid #ddd;
+    scrollbar-width: none !important; /* Hide scrollbar for Firefox */
+    margin-top: 30px;
+}
+
+.stories-container::-webkit-scrollbar {
+    display: none !important; /* Hide scrollbar for WebKit-based browsers (e.g., Chrome, Safari) */
+}
+
+/* Stories Wrapper */
+.stories {
+    display: flex;
+    gap: 15px;
+}
+
+/* Outer Gradient Border */
+.story-border {
+    position: relative;
+    width: 80px; /* Outer circle size */
+    height: 80px;
+    border-radius: 50%; /* Circular shape */
+    background: linear-gradient(#FD4329, #FA1786); /* Gradient border */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* White Layer */
+.story-inner-wrapper {
+    width: 75px; /* Slightly smaller than outer border */
+    height: 75px;
+    border-radius: 50%;
+    background-color: white; /* White layer */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Inner Image */
+.story-inner {
+    width: 70px; /* Slightly smaller than the white layer */
+    height: 70px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%; /* Ensures the image is circular */
+    background-color: white; /* Fallback color if no image */
+}
+
+/* Story Title */
+.story-title {
+    margin-top: 5px;
+    font-size: 12px;
+    color: #333;
+    text-align: center;
+}
+
+
+/* Contracts */
+
+.contracts {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+    max-height: 80vh; /* Adjust height as per your layout, 80% of the viewport height here */
+    overflow-y: auto; /* Enable vertical scrolling */
+    scrollbar-width: none !important; /* For Firefox: Hide scrollbar */
+}
+
+.contract-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 10px;
+    padding-bottom: 0px;
+}
+
+.contract-header {
+    display: flex;
+    align-items: center;
+    gap: 0px;
+}
+
+.contract-header img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+.contract-header div {
+    /*flex-grow: 1;*/
+}
+
+.contract-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.contract-header p {
+    margin: 2px 0;
+    color: gray;
+    font-size: 14px;
+}
+
+.contract-card-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.contract-card-header p{
+    font-weight: 200 !important; /* Ultra-thin weight */
+    /*font-size: 14px !important;*/
+}
+
+.contract-card-header h2{
+    font-weight: 400;
+}
+
+.contract-card-body {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e1e1e1; /* Set border color */
+    border-left: none; /* Remove the left border */
+    border-top-right-radius: 15px; /* Round the top-right corner */
+    border-bottom-right-radius: 15px; /* Round the bottom-right corner */
+    padding: 7px;
+    width: 100%;
+}
+
+.red-message {
+    font-weight:200;
+}
+
+.unred-message{
+    font-weight: 500;
+}
+
+.time{
+    font-weight:lighter;
+}
+
+/* Tasks */
+
+.tasks {
+    margin-top: 5px;
+}
+
+.task {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.task input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+.task label {
+    font-size: 14px;
+}

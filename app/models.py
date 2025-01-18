@@ -23,7 +23,7 @@ class Message(db.Model):
 
 
 # Many-to-Many association table for GroupChat members
-group_members = db.Table('group_members',
+contract_members= db.Table('contract_members',
     db.Column('contract_id', db.Integer, db.ForeignKey('contract.id'), primary_key=True),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
 )

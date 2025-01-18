@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block extra_head %}
+    <!-- Link both global styles and the specific problems page styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/contracts.css') }}?v=1.0">
+{% endblock %}
+
+{% block content %}
+<div class="top-fixed">
+    <div class="top-bar">
+        <h1>Social Contracts</h1>
+        <button class="create-groupchat-btn"><i class="fa-regular fa-pen-to-square" style="color: var(--blue);"></i></button>
+    </div>
+</div>
+
+
+<div class="stories-container">
+    <div class="stories">
+        {% for story in stories %}
+        <div class="story">
+            <div class="story-border">
+                <div class="story-inner-wrapper">
+                    <div class="story-inner" style="background-image: url('{{ story.background_image }}');"></div>
+                </div>
+            </div>
+            <p class="story-title">{{ story.title }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Contracts Section -->
+
+<div class="contracts">
+    {% for contract in contracts %}
+        <div class="contract-card">
+            
+            <div class="contract-header">
+                <!-- <img src="{{ contract.image }}" alt="{{ contract.name }}"> -->
+                <div class="story-border">
+                    <div class="story-inner-wrapper">
+                        <div class="story-inner" style="background-image: url('{{ contract.image }}');"></div>
+                    </div>
+                </div>
+                <div class="contract-card-body">
+                    <div class="contract-card-header">
+                            <h2>{{ contract.name }}</h2>
+                            <p>{{ contract.progressInterval}} {{ contract.progressIntervalsCompleted + 1 }} 🔥</p>                        
+                    </div>
+                    <p class="{{ 'red-message' if contract.lastMessage.messageReadByMe else 'unred-message' }}">
+                        {{ contract.lastMessage.sender }} 
+                        {% if contract.lastMessage.type == 'completion' %}
+                            completed a task
+                        {% else %}
+                            sent a message
+                        {% endif %}
+
+                        <span class="time">• {{ contract.lastMessage.timeReceived }} </span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="tasks">
+                {% for task in contract.tasks %}
+                    <div class="task">
+                        <input type="checkbox" 
+                            {% if task.repsCompleted == task.repsTotal %}checked{% endif %}>
+                        <label>
+                            {{ task.name }} 
+                            ({{ task.repsCompleted }}/{{ task.repsTotal }}) - 
+                            {{ task.intervalDeadline }}
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+
+<div class="main-content">
+    <p>Welcome to your contracts, {{ user.username }}!</p>
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+    <a href="/contracts" class="nav-item {% if request.endpoint == 'main.contracts' %}active{% endif %}">
+        <i class="fa-solid fa-file-contract"></i>
+        <span>Contracts</span>
+    </a>
+    <a href="/progress" class="nav-item {% if request.endpoint == 'main.progress' %}active{% endif %}">
+        <i class="fa-solid fa-trophy"></i>
+        <span>Progress</span>
+    </a>
+    <a href="/profile" class="nav-item {% if request.endpoint == 'main.profile' %}active{% endif %}">
+        <i class="fa-solid fa-gear"></i>
+        <span>Profile</span>
+    </a>
+</nav>
+
+<script>
+    // Select the top bar element
+    const topBar = document.querySelector('.top-fixed');
+
+    // Add a scroll event listener to the window
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 0) {
+            // Add shadow when scrolling starts
+            topBar.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.1)';
+        } else {
+            // Remove shadow when scrolled back to the top
+            topBar.style.boxShadow = 'none';
+        }
+    });
+</script>
+
+{% endblock %}

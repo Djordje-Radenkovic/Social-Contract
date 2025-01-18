@@ -1,0 +1,68 @@
+:root { 
+    --blue: #0FA2FF
+}
+
+
+@font-face {
+    font-family: 'SF Pro Display';
+    src: url('/static/fonts/SFProDisplay-Regular.ttf') format('truetype');
+    font-weight: 400; /* Regular */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SF Pro Display';
+    src: url('/static/fonts/SFProDisplay-Bold.ttf') format('truetype');
+    font-weight: 700; /* Bold */
+    font-style: normal;
+}
+
+
+body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: white;
+    color: #333;
+    margin: 0;
+    padding: 10px;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #ffffff;
+    border-top: 1px solid #ddd;
+    padding: 10px 0;
+}
+
+.nav-item {
+    text-align: center;
+    text-decoration: none;
+    color: #aaa; /* Default gray for inactive links */
+    flex: 1;
+}
+
+.nav-item i {
+    font-size: 20px;
+    display: block;
+    margin-bottom: 5px;
+    color: #aaa; /* Default gray for inactive icons */
+}
+
+.nav-item.active {
+    color: var(--blue); /* Active link color */
+}
+
+.nav-item.active i {
+    color: var(--blue); /* Active icon color */
+}
+
+.nav-item span {
+    font-size: 12px;
+}
+
+
