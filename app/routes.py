@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, current_user
-from .models import User
+from .models import User, Contract, Message
 from . import db
 
 main = Blueprint('main', __name__)
@@ -11,7 +11,7 @@ main = Blueprint('main', __name__)
 def home():
     return render_template('home.html', user=current_user)
 
-@main.route('/signup', methods=['GET', 'POST'])
+@main.route('/#/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
         username = request.form['username']
@@ -58,3 +58,61 @@ def update_profile():
     db.session.commit()
     flash('Profile updated successfully!', 'success')
     return redirect(url_for('main.profile'))
+
+############# CONTRACTS ##############
+
+@main.route('/create_contract', methods=['POST'])
+def create_contract():
+    data = request.get_json()
+    contract_name = data.get('name')
+    member_ids = data.get('members')  # List of user IDs
+
+    if not contract_name or not member_ids:
+        return jsonify({"error": "Contract name and members are required"}), 400
+
+    contract = Contract(name=contract_name)
+    for user_id in member_ids:
+        user = User.query.get(user_id)
+        if user:
+            contract.members.append(user)
+
+    db.session.add(contract)
+    db.session.commit()
+
+    return jsonify({"message": f"Group '{contract_name}' created successfully!"}), 201
+
+# send message
+@main.route('/send_message', methods=['POST'])
+def send_message():
+    data = request.get_json()
+    contract_id = data.get('contract_id')
+    sender_id = data.get('sender_id')
+    content = data.get('content')
+
+    if not contract_id or not sender_id or not content:
+        return jsonify({"error": "Group ID, sender ID, and content are required"}), 400
+
+    message = Message(content=content, sender_id=sender_id, group_id=contract_id)
+    db.session.add(message)
+    db.session.commit()
+
+    return jsonify({"message": "Message sent successfully!"}), 201
+
+# get messages from Contract
+@main.route('/get_messages/<int:contract_id>', methods=['GET'])
+def get_messages(contract_id):
+    contract = Contract.query.get(contract_id)
+    if not contract:
+        return jsonify({"error": "Contract not found"}), 404
+
+    messages = Message.query.filter_by(contract_id=contract_id).order_by(Message.created_at).all()
+    return jsonify([
+        {
+            "id": message.id,
+            "content": message.content,
+            "sender_id": message.sender_id,
+            "sender_name": message.sender.username,
+            "created_at": message.created_at.isoformat()
+        }
+        for message in messages
+    ])
