@@ -230,8 +230,18 @@
     padding-top: 5px;
     padding-bottom: 5px;
     text-decoration: none;
-    justify-content: space-between;
+    justify-content: space-between !important;
 }
+
+.task-content {
+    display: flex; /* Enables flexbox for layout */
+    justify-content: space-between; /* Pushes task-left and task-right to opposite ends */
+    align-items: center; /* Vertically aligns the content */
+    position: relative; /* Ensures proper layering */
+    width: 100%; /* Ensures it spans the entire task bar */
+}
+
+
 
 .task-right {
     font-weight: 200;
