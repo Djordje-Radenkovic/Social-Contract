@@ -47,13 +47,16 @@
                             <p>{{ contract.progressInterval}} {{ contract.progressIntervalsCompleted + 1 }} 🔥</p>                        
                     </div>
                     <p class="{{ 'red-message' if contract.lastMessage.messageReadByMe else 'unred-message' }}">
+                        {% if not contract.lastMessage.messageReadByMe %}
+                            <span style="display: inline-block; width: 5px; height: 5px; background-color: #FE0063; border-radius: 50%;  vertical-align: middle;"></span>
+
+                        {% endif %}
                         {{ contract.lastMessage.sender }} 
                         {% if contract.lastMessage.type == 'completion' %}
                             completed a task
                         {% else %}
                             sent a message
                         {% endif %}
-
                         <span class="time">• {{ contract.lastMessage.timeReceived }} </span>
                     </p>
                 </div>
@@ -61,25 +64,35 @@
 
             <div class="tasks">
                 {% for task in contract.tasks %}
-                    <div class="task">
-                        <input type="checkbox" 
-                            {% if task.repsCompleted == task.repsTotal %}checked{% endif %}>
-                        <label>
-                            {{ task.name }} 
-                            ({{ task.repsCompleted }}/{{ task.repsTotal }}) - 
+                    <a href="/profile" class="task">
+
+
+                        <div class="task-left">
+                            {% if task.repsCompleted == task.repsTotal %}
+                                <i class="fa-solid fa-square-check fa-lg" style="color: var(--blue);"></i>
+                            {% else %}
+                                <span style="display: inline-block; width: 17px; height: 17px; background-color: transparent; border-radius: 4px; border: 1px solid var(--blue);  vertical-align: middle;"></span>
+                            {% endif %}
+                            <span class="task-name" style="margin-left: 5px;">{{ task.name }}</span>
+                            {% if task.repsTotal > 1 and task.repsCompleted > 0 %}
+                                ({{ task.repsCompleted }}/{{ task.repsTotal }})
+                            {% endif %}
+                        </div>
+                        
+                        <div class="task-right">
                             {{ task.intervalDeadline }}
-                        </label>
-                    </div>
+                        </div>
+                    </a>
                 {% endfor %}
             </div>
+            
+            
+            
         </div>
     {% endfor %}
 </div>
 
 
-<div class="main-content">
-    <p>Welcome to your contracts, {{ user.username }}!</p>
-</div>
 
 <!-- Bottom Navigation -->
 <nav class="bottom-nav">

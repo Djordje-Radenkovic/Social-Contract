@@ -24,10 +24,9 @@ def contracts():
             "name": "Daily 5k run",
             "progressInterval": "Week",
             "progressIntervalsCompleted": 3,
-            'image': "static/dummy_images/detox.jpg",
+            'image': "static/dummy_images/Masha.jpg",
             'lastMessage': {
                 'sender':'Masha',
-                'senderImage': "static/dummy_images/Masha.jpg",
                 'messageReadByMe': False,
                 'timeReceived': '13:43',
                 'type': 'completion'
@@ -57,10 +56,9 @@ def contracts():
              'name': 'Digital Detox',
              'progressInterval': 'Day',
              'progressIntervalsCompleted': 31,
-             'image': 'static/dummy_images/detox.jpg',
+             'image': 'static/dummy_images/Bogdan.jpg',
              'lastMessage': {
                 'sender':'Bogdan',
-                'senderImage': "static/dummy_images/Bogdan.jpg",
                 'messageReadByMe': True,
                 'timeReceived': '12:31',
                 'type': 'message'
