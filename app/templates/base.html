@@ -6,8 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" viewport-fit=cover>
     <title>{% block title %}Flask App{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <meta name="theme-color" content="white;">
+    <meta name="theme-color" content="white">
     {% block extra_head %}{% endblock %}
+    <link rel="manifest" href="/static/manifest.json">
 
 </head>
 <body>

@@ -1,66 +1,6 @@
 /* Top Bar */
 
 
-.top-bar {
-    display: flex;
-    justify-content: space-between; /* Space out items (title and button) */
-    align-items: center; /* Vertically center content */
-    padding: 10px; /* Add some padding around the bar */
-}
-
-
-
-.top-fixed {
-    position: fixed;
-    top:0;
-    left: 0;
-    width: 100%;
-    z-index: 10000;
-    background-color: white;
-    transition: box-shadow 0.3s ease; /* Smooth transition for shadow effect */
-    box-shadow: none; /* No shadow initially */
-}
-
-
-
-.top-bar h1 {
-    flex: 1; /* Allow the h1 to take up available space */
-    text-align: center; /* Center the text within its space */
-    font-size: 18px; /* Adjust font size if needed */
-    margin: 0; /* Remove default margin */
-}
-
-
-.top-bar h1 {
-    position: absolute;
-    left: 50%; /* Move to the middle */
-    transform: translateX(-50%); /* Adjust to center it horizontally */
-    font-size: 18px;
-    margin: 0;
-    color: black;
-    font-weight: 600;
-}
-
-
-.create-groupchat-btn {
-    margin-left: auto;
-    border: none;
-    border-radius: 50%;
-    background-color: transparent;
-    font-size: 22px;
-}
-
-/* Main Content */
-.main-content {
-    padding: 15px;
-}
-
-.top-bar h1 {
-    color: black;
-    font-size: 18px;
-    font-weight: 600;
-}
-
 /* Stories Container */
 .stories-container {
     padding: 10px;
@@ -134,7 +74,9 @@
     display: flex;
     flex-direction: column;
     gap: 0px;
-    max-height: 80vh; /* Adjust height as per your layout, 80% of the viewport height here */
+    /* max-height: 80vh;  */
+    padding-bottom: 80px;
+    
 }
 
 .contract-card {
@@ -190,7 +132,28 @@
     border-bottom-right-radius: 15px; /* Round the bottom-right corner */
     padding: 7px;
     width: 100%;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
 }
+
+.contract-card-body:active {
+    background-color: rgba(211, 211, 211, 0.2) !important; 
+    text-decoration: none;
+    color:inherit
+}
+
+.contract-card-body:focus,
+.contract-card-body:hover {
+    outline: none; /* Remove browser's default outline */
+    color: inherit; /* Prevent text color from changing */
+    text-decoration: none; /* Prevent underline */
+}
+
+.contract-card-body:visited {
+    color: inherit; /* Inherit the current color from its parent or default */
+    text-decoration: none; /* Ensure no underline appears */
+}
+
 
 .red-message {
     font-weight:200;

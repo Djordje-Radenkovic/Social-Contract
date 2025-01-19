@@ -8,9 +8,13 @@
 <div class="top-fixed">
     <div class="top-bar">
         <h1>Social Contracts</h1>
-        <button class="create-groupchat-btn"><i class="fa-regular fa-pen-to-square" style="color: var(--blue);"></i></button>
+        <a href="{{ url_for('main.create_contract') }}" class="create-groupchat-btn">
+            <i class="fa-regular fa-pen-to-square" style="color: var(--blue);"></i>
+        </a>
+        <!-- <button class="create-groupchat-btn"><i class="fa-regular fa-pen-to-square" style="color: var(--blue);"></i></button> -->
     </div>
 </div>
+
 
 
 <div class="stories-container">
@@ -41,25 +45,27 @@
                         <div class="story-inner" style="background-image: url('{{ contract.image }}');"></div>
                     </div>
                 </div>
-                <div class="contract-card-body">
-                    <div class="contract-card-header">
-                            <h2>{{ contract.name }}</h2>
-                            <p>{{ contract.progressInterval}} {{ contract.progressIntervalsCompleted + 1 }} 🔥</p>                        
-                    </div>
-                    <p class="{{ 'red-message' if contract.lastMessage.messageReadByMe else 'unred-message' }}">
-                        {% if not contract.lastMessage.messageReadByMe %}
-                            <span style="display: inline-block; width: 5px; height: 5px; background-color: #FE0063; border-radius: 50%;  vertical-align: middle;"></span>
+                <!-- <a href="{{ url_for('main.contract_group_chat', contract_id=contract.id) }}" class="contract-card-link"> -->
+                    <a href="{{ url_for('main.contract_group_chat', contract_id=contract.id) }}" class="contract-card-body">
+                        <div class="contract-card-header">
+                                <h2>{{ contract.name }}</h2>
+                                <p>{{ contract.progressInterval}} {{ contract.progressIntervalsCompleted + 1 }} 🔥</p>                        
+                        </div>
+                        <p class="{{ 'red-message' if contract.lastMessage.messageReadByMe else 'unred-message' }}">
+                            {% if not contract.lastMessage.messageReadByMe %}
+                                <span style="display: inline-block; width: 5px; height: 5px; background-color: #FE0063; border-radius: 50%;  vertical-align: middle;"></span>
 
-                        {% endif %}
-                        {{ contract.lastMessage.sender }} 
-                        {% if contract.lastMessage.type == 'completion' %}
-                            completed a task
-                        {% else %}
-                            sent a message
-                        {% endif %}
-                        <span class="time">• {{ contract.lastMessage.timeReceived }} </span>
-                    </p>
-                </div>
+                            {% endif %}
+                            {{ contract.lastMessage.sender }} 
+                            {% if contract.lastMessage.type == 'completion' %}
+                                completed a task
+                            {% else %}
+                                sent a message
+                            {% endif %}
+                            <span class="time">• {{ contract.lastMessage.timeReceived }} </span>
+                        </p>
+                    </a>
+                <!-- </a> -->
             </div>
             <div class="tasks">
                 {% for task in contract.tasks %}
@@ -139,6 +145,8 @@
         }
     });
 </script>
-<input id="fileInput" type="file" accept="image/*" capture="camera" style="display: none;" onchange="handleFileUpload(event)" />
+<input id="fileInput" type="file" accept="image/*" style="display: none;" onchange="handleFileUpload(event)" />
+
+
 
 {% endblock %}

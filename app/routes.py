@@ -6,6 +6,9 @@ from . import db
 
 main = Blueprint('main', __name__)
 
+
+################ NAVIGATION ###############
+
 @main.route('/')
 @login_required
 def contracts():
@@ -21,6 +24,7 @@ def contracts():
 
     contracts = 2*[
         {
+            "id": '12345',
             "name": "Daily 5k run",
             "progressInterval": "Week",
             "progressIntervalsCompleted": 3,
@@ -52,7 +56,8 @@ def contracts():
                 }
             ]
          },
-         {
+         {  
+             'id': '123456',
              'name': 'Digital Detox',
              'progressInterval': 'Day',
              'progressIntervalsCompleted': 31,
@@ -130,27 +135,56 @@ def update_profile():
     flash('Profile updated successfully!', 'success')
     return redirect(url_for('main.profile'))
 
+@main.route('/contract/<int:contract_id>', methods=['GET'])
+@login_required
+def contract_group_chat(contract_id):
+    contract = Contract.query.get(contract_id)
+    if not contract:
+        flash("Contract not found.", "danger")
+        return redirect(url_for('main.contracts'))
+
+    if current_user not in contract.members:
+        flash("You are not a member of this contract.", "danger")
+        return redirect(url_for('main.contracts'))
+
+    return render_template('group_chat.html', contract=contract, user=current_user)
+
+
 ############# CONTRACTS ##############
 
-@main.route('/create_contract', methods=['POST'])
+@main.route('/create_contract', methods=['GET', 'POST'])
+@login_required
 def create_contract():
-    data = request.get_json()
-    contract_name = data.get('name')
-    member_ids = data.get('members')  # List of user IDs
+    if request.method == 'POST':
+        # Get form data
+        contract_name = request.form.get('contract_name')
+        member_ids = request.form.getlist('members')  # List of user IDs selected
 
-    if not contract_name or not member_ids:
-        return jsonify({"error": "Contract name and members are required"}), 400
+        # Validate input
+        if not contract_name or not member_ids:
+            flash("Contract name and members are required.", "danger")
+            return redirect(url_for('main.create_contract'))
 
-    contract = Contract(name=contract_name)
-    for user_id in member_ids:
-        user = User.query.get(user_id)
-        if user:
-            contract.members.append(user)
+        # Create the contract
+        contract = Contract(name=contract_name)
+        for user_id in member_ids:
+            user = User.query.get(user_id)
+            if user:
+                contract.members.append(user)
 
-    db.session.add(contract)
-    db.session.commit()
+        # Save to database
+        db.session.add(contract)
+        db.session.commit()
 
-    return jsonify({"message": f"Group '{contract_name}' created successfully!"}), 201
+        flash(f"Contract '{contract_name}' created successfully!", "success")
+        return redirect(url_for('main.contracts'))  # Redirect to the contracts page
+
+    # Fetch all users to select members
+    all_users = User.query.all()
+    return render_template('create_contract.html', all_users=all_users)
+
+
+############# MESASGING ##############
 
 # send message
 @main.route('/send_message', methods=['POST'])
@@ -161,22 +195,33 @@ def send_message():
     content = data.get('content')
 
     if not contract_id or not sender_id or not content:
-        return jsonify({"error": "Group ID, sender ID, and content are required"}), 400
+        return jsonify({"error": "Contract ID, sender ID, and content are required"}), 400
 
-    message = Message(content=content, sender_id=sender_id, group_id=contract_id)
+    contract = Contract.query.get(contract_id)
+    if not contract:
+        return jsonify({"error": "Contract not found"}), 404
+
+    sender = User.query.get(sender_id)
+    if sender not in contract.members:
+        return jsonify({"error": "Sender is not a member of this contract"}), 403
+
+    message = Message(content=content, sender_id=sender_id, contract_id=contract_id)
     db.session.add(message)
     db.session.commit()
 
     return jsonify({"message": "Message sent successfully!"}), 201
 
-# get messages from Contract
+# read messages
 @main.route('/get_messages/<int:contract_id>', methods=['GET'])
 def get_messages(contract_id):
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+
     contract = Contract.query.get(contract_id)
     if not contract:
         return jsonify({"error": "Contract not found"}), 404
 
-    messages = Message.query.filter_by(contract_id=contract_id).order_by(Message.created_at).all()
+    messages = Message.query.filter_by(contract_id=contract_id).order_by(Message.created_at).paginate(page=page, per_page=per_page)
     return jsonify([
         {
             "id": message.id,
@@ -185,5 +230,6 @@ def get_messages(contract_id):
             "sender_name": message.sender.username,
             "created_at": message.created_at.isoformat()
         }
-        for message in messages
+        for message in messages.items
     ])
+

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}{{ contract.name }} - Group Chat{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/group_chat.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+    <h1>{{ contract.name }}</h1>
+</div>
+
+<div class="main-content">
+    <!-- Members Section -->
+    <div class="members">
+        <h3>Members</h3>
+        <p>{{ ", ".join(member.username for member in contract.members) }}</p>
+    </div>
+
+    <!-- Chat Messages Section -->
+    <div id="messages" class="messages">
+        <!-- Messages will be dynamically loaded here -->
+        <p>Loading messages...</p>
+    </div>
+
+    <!-- Input Section for Sending Messages -->
+    <form id="message-form" class="message-form">
+        <input type="text" id="message-input" placeholder="Type your message..." required>
+        <button type="submit">Send</button>
+    </form>
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+    <a href="/" class="nav-item">
+        <i class="fa-solid fa-file-contract"></i>
+        <span>Contracts</span>
+    </a>
+    <a href="/progress" class="nav-item">
+        <i class="fa-solid fa-trophy"></i>
+        <span>Progress</span>
+    </a>
+    <a href="/profile" class="nav-item">
+        <i class="fa-solid fa-gear"></i>
+        <span>Profile</span>
+    </a>
+</nav>
+
+<script>
+    const contractId = {{ contract.id }};
+    const userId = {{ user.id }};
+
+    // Fetch Messages
+    async function fetchMessages() {
+        const response = await fetch(`/get_messages/${contractId}`);
+        const messages = await response.json();
+        const messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML = messages.map(msg => `
+            <div class="message">
+                <strong>${msg.sender_name}:</strong> ${msg.content} 
+                <span class="timestamp">${new Date(msg.created_at).toLocaleTimeString()}</span>
+            </div>
+        `).join('');
+        messagesDiv.scrollTop = messagesDiv.scrollHeight; // Scroll to the latest message
+    }
+
+    // Send Message
+    document.getElementById('message-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = document.getElementById('message-input');
+        const content = input.value;
+
+        const response = await fetch('/send_message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contract_id: contractId, sender_id: userId, content })
+        });
+
+        if (response.ok) {
+            input.value = ''; // Clear input field
+            fetchMessages(); // Refresh messages
+        }
+    });
+
+    // Load messages on page load
+    fetchMessages();
+
+    // Optional: Refresh messages periodically
+    setInterval(fetchMessages, 5000);
+</script>
+{% endblock %}
