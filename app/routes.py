@@ -19,7 +19,7 @@ def contracts():
         {"title": "Meditation", "background_image": "/static/dummy_images//meditation.jpg"},
     ]
 
-    contracts = [
+    contracts = 2*[
         {
             "name": "Daily 5k run",
             "progressInterval": "Week",

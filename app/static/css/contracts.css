@@ -30,11 +30,24 @@
     margin: 0; /* Remove default margin */
 }
 
+
+.top-bar h1 {
+    position: absolute;
+    left: 50%; /* Move to the middle */
+    transform: translateX(-50%); /* Adjust to center it horizontally */
+    font-size: 18px;
+    margin: 0;
+    color: black;
+    font-weight: 600;
+}
+
+
 .create-groupchat-btn {
+    margin-left: auto;
     border: none;
     border-radius: 50%;
     background-color: transparent;
-    font-size: 18px;
+    font-size: 22px;
 }
 
 /* Main Content */
@@ -56,9 +69,9 @@
     display: flex;
     align-items: center;
     background-color: white;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 10px solid #E4E4E4;
     scrollbar-width: none !important; /* Hide scrollbar for Firefox */
-    margin-top: 30px;
+    margin-top: 35px;
 }
 
 .stories-container::-webkit-scrollbar {
@@ -108,6 +121,7 @@
 /* Story Title */
 .story-title {
     margin-top: 5px;
+    margin-bottom:5px;
     font-size: 12px;
     color: #333;
     text-align: center;
@@ -121,8 +135,6 @@
     flex-direction: column;
     gap: 0px;
     max-height: 80vh; /* Adjust height as per your layout, 80% of the viewport height here */
-    overflow-y: auto; /* Enable vertical scrolling */
-    scrollbar-width: none !important; /* For Firefox: Hide scrollbar */
 }
 
 .contract-card {
@@ -222,6 +234,7 @@
 }
 
 .task-right {
-    font-weight: lighter;
+    font-weight: 200;
+    font-size: 14px;
 }
 
