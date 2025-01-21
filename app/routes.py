@@ -152,36 +152,93 @@ def contract_group_chat(contract_id):
 
 ############# CONTRACTS ##############
 
-@main.route('/create_contract', methods=['GET', 'POST'])
-@login_required
+# @main.route('/create_contract', methods=['POST'])
+# @login_required
+# def create_contract():
+#     data = request.json  # Expecting JSON from the frontend
+#     contract_name = data.get('name')
+#     expiry = data.get('expiry')
+#     tasks = data.get('tasks')  # List of tasks with intervals, deadlines, etc.
+#     member_ids = data.get('members')
+#     visibility = data.get('visibility')
+
+#     if not contract_name or not member_ids or not tasks:
+#         return jsonify({'error': 'Contract name, members, and tasks are required.'}), 400
+
+#     # Calculate progress interval from tasks
+#     progress_interval = max(task['interval'] for task in tasks)  # Custom logic as needed
+#     progress_interval_deadline = calculate_deadline(progress_interval, tasks)  # Implement this function
+
+#     contract = Contract(
+#         name=contract_name,
+#         end_date=expiry,
+#         progress_interval=progress_interval,
+#         progress_interval_deadline=progress_interval_deadline,
+#         members=[User.query.get(user_id) for user_id in member_ids],
+#     )
+
+#     # Add tasks to contract
+#     for task_data in tasks:
+#         task = Task(
+#             title=task_data['title'],
+#             interval=task_data['interval'],
+#             interval_deadline=task_data['interval_deadline'],
+#             intervals_total=task_data['intervals_total'],
+#             reps_total=task_data['reps_total'],
+#             order=task_data.get('order', '')
+#         )
+#         contract.tasks.append(task)
+
+#     db.session.add(contract)
+#     db.session.commit()
+
+#     return jsonify({'message': 'Contract created successfully!'}), 201
+
+
+@main.route('/create_contract', methods=['POST'])
 def create_contract():
-    if request.method == 'POST':
-        # Get form data
-        contract_name = request.form.get('contract_name')
-        member_ids = request.form.getlist('members')  # List of user IDs selected
+    print("Form data:", request.form)
+    print("File data:", request.files)
+    # Handle form data and optional files
+    background_image = request.files.get('background_image')  # No error if image is not provided
+    contract_name = request.form.get('name')
 
-        # Validate input
-        if not contract_name or not member_ids:
-            flash("Contract name and members are required.", "danger")
-            return redirect(url_for('main.create_contract'))
+    if not contract_name:
+        return jsonify({'error': 'Contract name is required'}), 400
 
-        # Create the contract
-        contract = Contract(name=contract_name)
-        for user_id in member_ids:
-            user = User.query.get(user_id)
-            if user:
-                contract.members.append(user)
+    # If an image is provided, save it
+    if background_image:
+        image_path = f'static/uploads/{background_image.filename}'
+    else:
+        image_path = None  # No image uploaded
 
-        # Save to database
-        db.session.add(contract)
-        db.session.commit()
+    # Return success response
+    return jsonify({
+        'message': 'Contract created successfully!',
+        'image_path': image_path
+    })
 
-        flash(f"Contract '{contract_name}' created successfully!", "success")
-        return redirect(url_for('main.contracts'))  # Redirect to the contracts page
 
-    # Fetch all users to select members
-    all_users = User.query.all()
-    return render_template('create_contract.html', all_users=all_users)
+
+
+
+@main.route('/get_users', methods=['GET'])
+@login_required
+def get_users():
+    # Query all users except the current user
+    users = User.query.filter(User.id != current_user.id).all()
+
+    # Format the users into a list of dictionaries
+    user_data = [
+        {
+            "id": user.id,  # User ID
+            "username": user.username,  # Username
+            "picture": user.picture_url if hasattr(user, 'picture_url') else None  # Picture URL or None
+        }
+        for user in users
+    ]
+
+    return jsonify(user_data)  # Return the list as a JSON response
 
 
 ############# MESASGING ##############

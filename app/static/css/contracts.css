@@ -647,8 +647,9 @@ input:focus {
 .user {
     display: flex;
     align-items: center;
+    justify-content: space-between; 
     gap: 10px;
-    padding: 10px;
+    padding: 10p 15px;
     background: white;
     color: black;
     font-size: 16px;
@@ -683,6 +684,36 @@ input:focus {
     border-radius: 15px !important;
     background-color: white;
     overflow: hidden !important;
+}
+
+/* Checkbox Styling */
+.user-checkbox {
+    width:30px; /* Larger size */
+    border: 2px solid #ccc;
+    border-radius: 50%; /* Circle checkbox */
+    cursor: pointer;
+    accent-color: #007aff; /* Blue color */
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-start;
+}
+
+#suggested-users {
+    max-height: 500px; /* Adjust height as needed */
+    overflow-y: auto!important; /* Enable vertical scrolling */
+    padding-right: 10px; /* Optional: Add padding to avoid scrollbar overlap */
+
+}
+
+/* Ensure parent container layout doesn't break */
+.user-list-container {
+    display: flex;
+    flex-direction: column;
+    position: relative; /* Ensure fixed content respects this */
 }
 
 /* KAAaaaaaasadsdadasdsadasdasdasdasdasdasd *//* KAAaaaaaasadsdadasdsadasdasdasdasdasdasd */

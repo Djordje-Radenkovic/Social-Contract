@@ -224,9 +224,14 @@
                 <p class="option-description" id="private-description" style="display: none;">Search for users and invite them to join.</p>
 
             
-                <input type="text" id="search-user" placeholder="Search username" style="display: none;" oninput="filterUsers()">
+                <div class="user-list-container">
+                    <!-- Search Input -->
+                    <input type="text" id="search-user" placeholder="Search username" oninput="filterUsers()">
                 
-                <div id="suggested-users" class="user-list" style="display: none;"></div>
+                    <!-- User List -->
+                    <div id="suggested-users" class="user-list"></div>
+                </div>
+                
             </div>
         </div>
     </div>

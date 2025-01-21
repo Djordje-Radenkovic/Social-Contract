@@ -1,4 +1,5 @@
 let selectedImage = null; // Store the selected image file
+let allUsers = []; // Global variable to store all users
 
 // Trigger the file input click when the camera icon is clicked
 function openFileUpload(taskId) {
@@ -79,8 +80,7 @@ function closeContractTypeModal() {
 }
 
 
-// Submit Contract (modified to collect data from both modals)
-function submitContract() {
+async function submitContract() {
     const contractName = document.getElementById('contract-name').value;
     const expiry = document.getElementById('contract-expiry').value;
     const visibility = document.querySelector('input[name="visibility"]:checked').value;
@@ -88,40 +88,46 @@ function submitContract() {
         checkbox => checkbox.value
     );
 
-    // Create FormData and append all necessary data
+    const tasks = Array.from(document.querySelectorAll('.task-item')).map(taskItem => ({
+        name: taskItem.querySelector('.task-input').value.trim(),
+        frequency: taskItem.querySelector('.frequency-btn').textContent.trim()
+    }));
+
+    // Create a FormData object to handle text + file
     const formData = new FormData();
     formData.append('name', contractName);
     formData.append('expiry', expiry);
     formData.append('visibility', visibility);
     formData.append('members', JSON.stringify(members));
+    formData.append('tasks', JSON.stringify(tasks));
+
+    // Include the selected image if present
     if (selectedImage) {
         formData.append('background_image', selectedImage);
     }
 
-    // Collect tasks data
-    const tasks = Array.from(document.querySelectorAll('.task-item')).map(taskItem => {
-        return {
-            name: taskItem.querySelector('.task-input').value,
-            frequency: taskItem.querySelector('.frequency-btn').textContent.trim()
-        };
-    });
-    formData.append('tasks', JSON.stringify(tasks));
+    try {
+        const response = await fetch('/create_contract', {
+            method: 'POST',
+            body: formData, // Use FormData for the payload
+        });
 
-    // Send the contract creation request
-    fetch('/create_contract', {
-        method: 'POST',
-        body: formData,
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Contract created successfully:", data);
-        closeContractTypeModal();
-        window.location.reload(); // Refresh the page to show new contract
-    })
-    .catch(error => {
-        console.error("Error creating contract:", error);
-    });
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(result.message);
+            closeContractTypeModal();
+            window.location.reload();
+        } else {
+            alert(result.error || 'Failed to create contract.');
+        }
+    } catch (error) {
+        console.error('Error submitting contract:', error);
+        alert('An unexpected error occurred.');
+    }
 }
+
+
 
 function addTask() {
     const taskInput = document.getElementById('task-input');
@@ -283,13 +289,21 @@ function deleteTask() {
 
 
 // Search People
-const users = [
-    { username: 'Logan', picture: null },
-    { username: 'Marko', picture: 'https://via.placeholder.com/40' },
-    { username: 'Ivan', picture: null },
-    { username: 'Sophia', picture: null },
-    { username: 'Emma', picture: 'https://via.placeholder.com/40' },
-];
+async function fetchUsers() {
+    try {
+        const response = await fetch('/get_users'); // Call the Flask API
+        if (!response.ok) {
+            throw new Error('Failed to fetch users');
+        }
+        const users = await response.json(); // Parse JSON response
+        allUsers = users; // Store the users globally
+        renderUserList(allUsers); // Render users in the UI
+    } catch (error) {
+        console.error('Error fetching users:', error);
+    }
+}
+
+
 
 function toggleVisibility(type) {
     const publicDescription = document.getElementById('public-description');
@@ -307,8 +321,16 @@ function toggleVisibility(type) {
         privateDescription.style.display = 'block';
         searchInput.style.display = 'block';
         userList.style.display = 'flex';
-        renderUserList(users); // Populate initial list
+        // Fetch users dynamically and update the UI
+        fetchUsers();// Populate initial list
     }
+}
+
+// Generate a consistent color for each username
+function getFixedColor(username) {
+    const hash = username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const colors = ['#FF5733', '#33FF57', '#3357FF', '#F0A500', '#9C33FF'];
+    return colors[hash % colors.length]; // Pick a color based on the hash
 }
 
 function renderUserList(userList) {
@@ -320,12 +342,14 @@ function renderUserList(userList) {
 
         const avatar = user.picture
             ? `<img src="${user.picture}" alt="${user.username}">`
-            : `<div class="user-placeholder" style="background-color: ${getRandomColor()}">${user.username[0]}</div>`;
+            : `<div class="user-placeholder" style="background-color: ${getFixedColor(user.username)}">${user.username[0]}</div>`;
 
         userDiv.innerHTML = `
-            ${avatar}
-            <span>${user.username}</span>
-            <input type="checkbox" name="members" value="${user.username}">
+            <div class="user-info">
+                ${avatar}
+                <span>${user.username}</span>
+            </div>
+            <input type="checkbox" name="members" value="${user.username}" class="user-checkbox" style="width: 25px; height: 25px;">
         `;
         userContainer.appendChild(userDiv);
     });
@@ -333,11 +357,15 @@ function renderUserList(userList) {
 
 function filterUsers() {
     const searchTerm = document.getElementById('search-user').value.toLowerCase();
-    const filteredUsers = users.filter((user) =>
+
+    // Filter users from the global allUsers array
+    const filteredUsers = allUsers.filter((user) =>
         user.username.toLowerCase().includes(searchTerm)
     );
-    renderUserList(filteredUsers);
+
+    renderUserList(filteredUsers); // Render the filtered list
 }
+
 
 function getRandomColor() {
     const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A8', '#A833FF'];
