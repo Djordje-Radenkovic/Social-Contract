@@ -1,5 +1,6 @@
 :root { 
-    --blue: #0FA2FF
+    --blue: #0FA2FF;
+    --placeholder: #C1C0C8;
 }
 
 
@@ -93,14 +94,6 @@ body {
 
 
 .top-bar h1 {
-    flex: 1; /* Allow the h1 to take up available space */
-    text-align: center; /* Center the text within its space */
-    font-size: 18px; /* Adjust font size if needed */
-    margin: 0; /* Remove default margin */
-}
-
-
-.top-bar h1 {
     position: absolute;
     left: 50%; 
     transform: translateX(-50%); 
@@ -109,6 +102,8 @@ body {
     color: black;
     font-weight: 600;
 }
+
+
 
 .create-groupchat-btn {
     margin-left: auto;

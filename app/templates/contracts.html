@@ -8,14 +8,16 @@
 <div class="top-fixed">
     <div class="top-bar">
         <h1>Social Contracts</h1>
-        <a href="{{ url_for('main.create_contract') }}" class="create-groupchat-btn">
+        <!-- <a href="{{ url_for('main.create_contract') }}" class="create-groupchat-btn">
             <i class="fa-regular fa-pen-to-square" style="color: var(--blue);"></i>
-        </a>
+        </a> -->
+        <button onclick="openModal()" class="create-groupchat-btn">
+            <!-- <i class="fa-regular fa-pen-to-square" style="color: var(--blue);"></i> -->
+            <i class="fa-solid fa-plus" style="color: var(--blue);"></i>
+        </button>
         <!-- <button class="create-groupchat-btn"><i class="fa-regular fa-pen-to-square" style="color: var(--blue);"></i></button> -->
     </div>
 </div>
-
-
 
 <div class="stories-container">
     <div class="stories">
@@ -146,6 +148,122 @@
     });
 </script>
 <input id="fileInput" type="file" accept="image/*" style="display: none;" onchange="handleFileUpload(event)" />
+
+<!-- Contract Creation Modal -->
+<div id="createContractModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button class="close-btn" onclick="closeModal()">Cancel</button>
+            <h2>New Contract</h2>
+            <button class="next-btn" onclick="openContractTypeModal()">Next</button>
+        </div>
+        <div class="modal-body">
+            <div class="contract-input-name">
+                <a class="camera" onclick="openFileUpload()">
+                    <i class="fa-solid fa-camera fa-2xl" style="color: var(--blue);"></i>
+                </a>
+                <input id="fileInput" type="file" accept="image/*" style="display: none;" onchange="handleFileUpload(event)">
+                
+                <input type="text" id="contract-name" placeholder="Name - what's your goal?" required>
+            </div>
+            <div class="form-group">
+                <label for="contract-expiry">Contract Expiry</label>
+                <input
+                    type="date"
+                    id="contract-expiry"
+                    name="contract-expiry"
+                    required
+                >
+            </div>            
+            <div class="form-group">
+                <label>Tasks</label>
+                <div id="task-list">
+                    <!-- Initial Task Input -->
+                    <div class="task-item">
+                        <input type="text" class="task-input" placeholder="e.g. workout for 30 min." />
+                        <button class="frequency-btn" onclick="openFrequencyModal(this)">Daily <i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <button class="add-task-btn" onclick="addTask()">
+                    <i class="fa-solid fa-circle-plus fa-xl" style="color: var(--blue); margin-right: 8px;"></i>Add Task
+                </button>
+            </div>            
+        </div>
+    </div>
+</div>
+  
+
+<!-- Second Modal (Contract Type) -->
+<div id="contractTypeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button class="back-btn" onclick="closeContractTypeModal()">Back</button>
+            <h2>Contract Type</h2>
+            <button class="create-btn" onclick="submitContract()">Create</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <!-- Public/Private Options -->
+                <div class="visibility-options">
+                    <label class="option">
+                        <input type="radio" name="visibility" value="public" checked onclick="toggleVisibility('public')">
+                        <div class="option-content">
+                            <span class="checkmark"></span>
+                            <span>Public</span>
+                        </div>
+                    </label>                    
+                    <label class="option">
+                        <input type="radio" name="visibility" value="private" onclick="toggleVisibility('private')">
+                        <div class="option-content">
+                            <span class="checkmark"></span>
+                            <span>Private</span>
+                        </div>
+                    </label>
+                </div>
+                <p class="option-description" id="public-description">Public channels can be found in search. Anyone can join.</p>
+                <p class="option-description" id="private-description" style="display: none;">Search for users and invite them to join.</p>
+
+            
+                <input type="text" id="search-user" placeholder="Search username" style="display: none;" oninput="filterUsers()">
+                
+                <div id="suggested-users" class="user-list" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="frequencyModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button class="back-btn" onclick="closeFrequencyModal()">Back</button>
+            <h2>Modify Task</h2>
+            <button class="done-btn" onclick="saveFrequency()">Done</button>
+        </div>
+        <div class="modal-body">
+            <label>Frequency</label>
+            <div class="frequency-options">
+                <label>
+                    <input type="radio" name="frequency" value="daily" checked onclick="toggleFrequencyInputs('daily')" />
+                    Daily
+                </label>
+                <label>
+                    <input type="radio" name="frequency" value="x-times" onclick="toggleFrequencyInputs('x-times')" />
+                    X times a week
+                    <input type="number" id="times-per-week" min="1" max="7" placeholder="Times/week" style="display: none;" />
+                </label>
+                <label>
+                    <input type="radio" name="frequency" value="by-date" onclick="toggleFrequencyInputs('by-date')" />
+                    By Date
+                    <input type="date" id="specific-date" style="display: none;" />
+                </label>
+            </div>
+
+            <button class="delete-task-btn" onclick="deleteTask()">Delete Task</button>
+        </div>
+    </div>
+</div>
+
+
 
 
 
