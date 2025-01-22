@@ -1,6 +1,7 @@
 from . import db
 from flask_login import UserMixin
 from datetime import datetime
+import json
 
 # Many-to-Many association table for GroupChat members
 contract_members= db.Table('contract_members',
@@ -16,40 +17,50 @@ class User(UserMixin, db.Model):
 
 
 class Contract(db.Model):
+    __tablename__ = 'contracts'  # Optional, specifies the table name
+
+    # Attributes matching the keys you provided
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
-    members = db.relationship('User', secondary=contract_members, back_populates='contracts')
-    messages = db.relationship('Message', back_populates='contract', cascade="all, delete-orphan")
+    active = db.Column(db.Boolean, default=True, nullable=False)  # 'active'
+    startDate = db.Column(db.String(10), nullable=False)  # 'startDate' in 'YYYY-MM-DD'
+    endDate = db.Column(db.String(10), nullable=False)  # 'endDate' in 'YYYY-MM-DD'
+    failedMembers = db.Column(db.Text, default=json.dumps([]), nullable=False)  # 'failedMembers'
+    image = db.Column(db.String(255))  # 'image' for the group picture
+    lastMessage = db.Column(db.Text, default=json.dumps({}), nullable=False)  # 'lastMessage'
+    members = db.Column(db.Text, default=json.dumps([]), nullable=False)  # 'members' JSON-encoded list
+    invitedUsers = db.Column(db.Text, default=json.dumps([]), nullable=False)  # 'invitedUsers' JSON-encoded list
+    name = db.Column(db.String(100), nullable=False)  # 'name' for contract name
+    progressInterval = db.Column(db.String(20), nullable=False)  # 'progressInterval'
+    progressIntervalDeadline = db.Column(db.String(10), nullable=False)  # 'progressIntervalDeadline' in 'YYYY-MM-DD'
+    progressIntervalsCompleted = db.Column(db.Text, default=json.dumps({}), nullable=False)  # 'progressIntervalsCompleted'
 
-# class Contract(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(120), nullable=False)
-#     active = db.Column(db.Boolean, default=True)
-#     start_date = db.Column(db.DateTime, default=datetime.utcnow)
-#     end_date = db.Column(db.DateTime)
-#     group_picture = db.Column(db.String, nullable=True)
-#     progress_interval = db.Column(db.String, nullable=False)  # daily/weekly/once
-#     progress_interval_deadline = db.Column(db.String, nullable=True)
-#     progress_intervals_completed = db.Column(db.JSON, default={})
-#     members = db.relationship('User', secondary=contract_members, back_populates='contracts')
-#     tasks = db.relationship('Task', backref='contract', cascade="all, delete-orphan")
-#     last_message = db.Column(db.JSON, default={})
-#     failed_members = db.Column(db.JSON, default=[])
-#     invited_users = db.Column(db.JSON, default=[])  # List of emails
-#     member_details = db.Column(db.JSON, default={})
+    # Relationships for backreferences
+    tasks = db.relationship('Task', backref='contract', lazy=True)  # Link to tasks
+    messages = db.relationship('Message', backref='contract', lazy=True)  # Link to messages
+    progressUpdates = db.relationship('ProgressUpdate', backref='contract', lazy=True)  # Link to progress updates
+
+    # Optional __repr__ for debugging
+    def __repr__(self):
+        return f"<Contract {self.name}>"
 
 
-# class Task(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     title = db.Column(db.String, nullable=False)
-#     interval = db.Column(db.String, nullable=False)  # daily/weekly/once
-#     interval_deadline = db.Column(db.String, nullable=True)
-#     intervals_total = db.Column(db.Integer, nullable=False, default=1)
-#     intervals_completed = db.Column(db.JSON, default={})  # {user_id: completed_intervals}
-#     reps_total = db.Column(db.Integer, nullable=False, default=1)
-#     reps_completed = db.Column(db.JSON, default={})  # {user_id: reps_completed}
-#     order = db.Column(db.String, nullable=True)
-#     contract_id = db.Column(db.Integer, db.ForeignKey('contract.id'), nullable=False)
+class Task(db.Model):
+    __tablename__ = 'tasks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    contract_id = db.Column(db.Integer, db.ForeignKey('contracts.id'), nullable=False)  # Foreign key to Contract
+    active = db.Column(db.Boolean, default=True, nullable=False)  # Task is active or not
+    interval = db.Column(db.String(20), nullable=False)  # 'daily', 'weekly', etc.
+    intervalDeadline = db.Column(db.String(10), nullable=False)  # Deadline in 'YYYY-MM-DD'
+    intervalsTot = db.Column(db.Integer, nullable=False)  # Total intervals for the task
+    intervalsCompleted = db.Column(db.Text, default=json.dumps({}), nullable=False)  # JSON-encoded dict
+    repsTot = db.Column(db.Integer, nullable=False)  # Total reps for the task
+    repsCompleted = db.Column(db.Text, default=json.dumps({}), nullable=False)  # JSON-encoded dict
+    name = db.Column(db.String(100), nullable=False)  # Task name
+
+    def __repr__(self):
+        return f"<Task {self.name}>"
+
 
 
 

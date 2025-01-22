@@ -92,6 +92,22 @@ async function submitContract() {
         name: taskItem.querySelector('.task-input').value.trim(),
         frequency: taskItem.querySelector('.frequency-btn').textContent.trim()
     }));
+    
+     // Validation: Check required fields
+     if (!contractName) {
+        alert('Please enter a contract name.');
+        return;
+    }
+
+    if (!expiry) {
+        alert('Please select an expiry date.');
+        return;
+    }
+
+    if (tasks.length === 0 || tasks.some(task => !task.name)) {
+        alert('Please add at least one task with a valid name.');
+        return;
+    }
 
     // Create a FormData object to handle text + file
     const formData = new FormData();

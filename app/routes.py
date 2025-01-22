@@ -1,11 +1,32 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from flask_login import login_user, logout_user, login_required, current_user
-from .models import User, Contract, Message
+from .models import User, Contract, Message, Task
 from . import db
+from datetime import datetime, timedelta
+import boto3
+from dotenv import load_dotenv
+import json
+import os
+from helpers import get_next_sunday, task_details, contract_details, get_intervalsTot
 
 main = Blueprint('main', __name__)
 
+# load environmental vaiables
+load_dotenv()
+
+# get AWS access
+aws_access_key = os.getenv('AWS_ACCESS_KEY')
+aws_secret_key = os.getenv('AWS_SECRET_KEY')
+
+# set up content database endpoint
+s3 = boto3.client(
+    's3',
+    aws_access_key_id = aws_access_key,
+    aws_secret_access_key = aws_secret_key
+)
+bucket = 'socialcontract1'
 
 ################ NAVIGATION ###############
 
@@ -199,25 +220,88 @@ def contract_group_chat(contract_id):
 def create_contract():
     print("Form data:", request.form)
     print("File data:", request.files)
-    # Handle form data and optional files
-    background_image = request.files.get('background_image')  # No error if image is not provided
-    contract_name = request.form.get('name')
 
-    if not contract_name:
-        return jsonify({'error': 'Contract name is required'}), 400
+    # Extract data
+    background_image = request.files.get('background_image')  # background image
+    contract_name = request.form.get('name') # contract name
+    expiry = request.form.get('expiry') # contract expiry date - string form
+    visibility = request.form.get('visibility') # visibility - public or private
+    members = request.form.get('members', '[]') # list of usernames if private, empty if public
+    tasks = request.form.get('tasks')
 
-    # If an image is provided, save it
+    # check if input data all good
+    if not contract_name or not expiry or not tasks:
+        return jsonify({'error': 'Contract name5 is required'}), 400
+
+    tasks = json.loads(tasks)
+    if not tasks or any(task.get('name', '').strip() == '' for task in tasks):
+        return jsonify({'error': 'At least one valid task is required.'}), 400
+
+    # Process members
+    members = json.loads(members)
+    if visibility == 'private' and not members:
+        return jsonify({'error': 'Private contracts must have at least one member.'}), 400
+
+    # Upload background image to AWS and retreive URl
     if background_image:
-        image_path = f'static/uploads/{background_image.filename}'
+        filename = secure_filename(background_image.filename)
+        address = f'groupPictures/{filename}'
+        s3.upload_fileobj(background_image, bucket, address )
+        # Generate S3 URL
+        groupPicture= f"https://{bucket}.s3.amazonaws.com/{address}"
     else:
-        image_path = None  # No image uploaded
+        groupPicture = None
+    
+    # compute some contract details
+    contract_details = contract_details(tasks)
+    progressIntervalsCompleted = {name: 0 for name in members + current_user.username}
 
-    # Return success response
+    # Create a Contract instance
+    new_contract = Contract(
+        active=True,
+        startDate=datetime.utcnow().strftime('%Y-%m-%d'),
+        endDate=expiry,
+        failedMembers=json.dumps([]),
+        image=groupPicture,
+        lastMessage=json.dumps({}),
+        members=json.dumps([current_user.username]),
+        invitedUsers=json.dumps(members),
+        name=contract_name,
+        progressInterval=contract_details['progressInterval'],
+        progressIntervalDeadline=contract_details['progressIntervalDeadline'],
+        progressIntervalsCompleted=json.dumps(progressIntervalsCompleted)
+    )
+
+    # Add and commit the contract to the database
+    db.session.add(new_contract)
+    db.session.commit()
+
+    # Retrieve the contract ID
+    contract_id = new_contract.id
+
+    for task in tasks:
+        task_details = task_details(task)
+        # Tasks
+        new_task = Task(
+            contract_id=contract_id,
+            active=True,
+            interval=task_details['interval'],
+            intervalDeadline=task_details['intervalDeadline'],
+            intervalsTot=get_intervalsTot(contract_details['progressInterval'], task_details['interval']),
+            intervalsCompleted=json.dumps(progressIntervalsCompleted),
+            repsTot=task_details['repsTot'],
+            repsCompleted=json.dumps(progressIntervalsCompleted),
+            name=task_details['name']
+        )
+        db.session.add(new_task)
+    db.session.commit() 
+
+    # Return success response with contract ID
     return jsonify({
-        'message': 'Contract created successfully!',
-        'image_path': image_path
-    })
-
+        'message': 'Contract and tasks created successfully!',
+        'contract_id': contract_id,
+        'image_path': new_contract.image
+    }), 200
 
 
 
