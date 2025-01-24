@@ -392,10 +392,3 @@ function getRandomColor() {
 document.addEventListener('DOMContentLoaded', () => {
     toggleVisibility('public');
 });
-
-
-
-
-
-
-

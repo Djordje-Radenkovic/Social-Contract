@@ -103,6 +103,7 @@
 
 .contract-card-header {
     display: flex;
+    color: black !important;
     justify-content: space-between;
 }
 

@@ -35,7 +35,6 @@
 </div>
 
 <!-- Contracts Section -->
-
 <div class="contracts">
     {% for contract in contracts %}
         <div class="contract-card">
@@ -44,6 +43,8 @@
                 <!-- <img src="{{ contract.image }}" alt="{{ contract.name }}"> -->
                 <div class="story-border">
                     <div class="story-inner-wrapper">
+                        <!-- Instead of using contract.image directly -->
+                       
                         <div class="story-inner" style="background-image: url('{{ contract.image }}');"></div>
                     </div>
                 </div>
@@ -53,18 +54,24 @@
                                 <h2>{{ contract.name }}</h2>
                                 <p>{{ contract.progressInterval}} {{ contract.progressIntervalsCompleted + 1 }} 🔥</p>                        
                         </div>
-                        <p class="{{ 'red-message' if contract.lastMessage.messageReadByMe else 'unred-message' }}">
-                            {% if not contract.lastMessage.messageReadByMe %}
+                        <p class="{{ 'red-message' if current_user.username in contract.lastMessage.messageReadBy else 'unred-message' }}">
+                            {% if not current_user.username in contract.lastMessage.messageReadBy %}
                                 <span style="display: inline-block; width: 5px; height: 5px; background-color: #FE0063; border-radius: 50%;  vertical-align: middle;"></span>
-
+                    
                             {% endif %}
-                            {{ contract.lastMessage.sender }} 
+                            {% if current_user.username == contract.lastMessage.sender %}
+                                You
+                            {% else %}
+                                {{ contract.lastMessage.sender }} 
+                            {% endif %}
                             {% if contract.lastMessage.type == 'completion' %}
                                 completed a task
-                            {% else %}
+                            {% elif contract.lastMessage.type == 'message' %}
                                 sent a message
+                            {% elif contract.lastMessage.type == 'initiation' %}
+                                created a contract!
                             {% endif %}
-                            <span class="time">• {{ contract.lastMessage.timeReceived }} </span>
+                            <span class="time">• {{ contract.lastMessage.timeReceived }}</span>
                         </p>
                     </a>
                 <!-- </a> -->
@@ -115,7 +122,6 @@
 </div>
 
 
-
 <!-- Bottom Navigation -->
 <nav class="bottom-nav">
     <a href="/" class="nav-item {% if request.endpoint == 'main.contracts' %}active{% endif %}">
@@ -147,6 +153,7 @@
         }
     });
 </script>
+
 <input id="fileInput" type="file" accept="image/*" style="display: none;" onchange="handleFileUpload(event)" />
 
 <!-- Contract Creation Modal -->
@@ -223,7 +230,6 @@
                 <p class="option-description" id="public-description">Public channels can be found in search. Anyone can join.</p>
                 <p class="option-description" id="private-description" style="display: none;">Search for users and invite them to join.</p>
 
-            
                 <div class="user-list-container">
                     <!-- Search Input -->
                     <input type="text" id="search-user" placeholder="Search username" oninput="filterUsers()">

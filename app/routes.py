@@ -9,7 +9,7 @@ import boto3
 from dotenv import load_dotenv
 import json
 import os
-from helpers import get_next_sunday, task_details, contract_details, get_intervalsTot
+from .helpers import get_next_sunday, task_details, contract_details, get_intervalsTot, format_message_date, format_due_date
 
 main = Blueprint('main', __name__)
 
@@ -30,9 +30,18 @@ bucket = 'socialcontract1'
 
 ################ NAVIGATION ###############
 
+
+
 @main.route('/')
 @login_required
 def contracts():
+
+    # Query contracts the user is a member of
+    member_contracts = Contract.query.filter(Contract.members.any(id=current_user.id)).all()
+
+    # Query contracts the user is invited to
+    invited_contracts = Contract.query.filter(Contract.invited_users.any(id=current_user.id)).all()
+
     stories = [
         {"title": "Daily TikTok Post", "background_image": "/static/dummy_images/tiktok.jpg"},
         {"title": "Hackathon", "background_image": "/static/dummy_images//hackathon.jpg"},
@@ -106,6 +115,33 @@ def contracts():
          }
     ]
 
+    interval_map = {
+        "daily": 'Day',
+        'weekly': 'Week',
+        'once': 'Milestone'
+    }
+
+    contracts = [
+            {
+                "id": contract.id,
+                "name": contract.name,
+                "progressInterval": interval_map[contract.progressInterval],
+                "progressIntervalsCompleted": json.loads(contract.progressIntervalsCompleted)[current_user.username],
+                "image": contract.image,
+                "lastMessage": format_message_date(json.loads(contract.lastMessage)),
+                "tasks": [
+                    {
+                        "name": task.name,
+                        "repsTotal": task.repsTot,
+                        "repsCompleted": json.loads(task.repsCompleted)[current_user.username],
+                        "intervalDeadline": format_due_date(task.intervalDeadline)
+                    }
+                    for task in contract.tasks 
+                ]
+            }
+            for contract in member_contracts + invited_contracts
+    ]
+
     return render_template('contracts.html', user=current_user, stories=stories, contracts=contracts)
 
 @main.route('/signup', methods=['GET', 'POST'])
@@ -173,48 +209,6 @@ def contract_group_chat(contract_id):
 
 ############# CONTRACTS ##############
 
-# @main.route('/create_contract', methods=['POST'])
-# @login_required
-# def create_contract():
-#     data = request.json  # Expecting JSON from the frontend
-#     contract_name = data.get('name')
-#     expiry = data.get('expiry')
-#     tasks = data.get('tasks')  # List of tasks with intervals, deadlines, etc.
-#     member_ids = data.get('members')
-#     visibility = data.get('visibility')
-
-#     if not contract_name or not member_ids or not tasks:
-#         return jsonify({'error': 'Contract name, members, and tasks are required.'}), 400
-
-#     # Calculate progress interval from tasks
-#     progress_interval = max(task['interval'] for task in tasks)  # Custom logic as needed
-#     progress_interval_deadline = calculate_deadline(progress_interval, tasks)  # Implement this function
-
-#     contract = Contract(
-#         name=contract_name,
-#         end_date=expiry,
-#         progress_interval=progress_interval,
-#         progress_interval_deadline=progress_interval_deadline,
-#         members=[User.query.get(user_id) for user_id in member_ids],
-#     )
-
-#     # Add tasks to contract
-#     for task_data in tasks:
-#         task = Task(
-#             title=task_data['title'],
-#             interval=task_data['interval'],
-#             interval_deadline=task_data['interval_deadline'],
-#             intervals_total=task_data['intervals_total'],
-#             reps_total=task_data['reps_total'],
-#             order=task_data.get('order', '')
-#         )
-#         contract.tasks.append(task)
-
-#     db.session.add(contract)
-#     db.session.commit()
-
-#     return jsonify({'message': 'Contract created successfully!'}), 201
-
 
 @main.route('/create_contract', methods=['POST'])
 def create_contract():
@@ -222,16 +216,16 @@ def create_contract():
     print("File data:", request.files)
 
     # Extract data
-    background_image = request.files.get('background_image')  # background image
-    contract_name = request.form.get('name') # contract name
-    expiry = request.form.get('expiry') # contract expiry date - string form
-    visibility = request.form.get('visibility') # visibility - public or private
-    members = request.form.get('members', '[]') # list of usernames if private, empty if public
+    background_image = request.files.get('background_image')  # Background image
+    contract_name = request.form.get('name')  # Contract name
+    expiry = request.form.get('expiry')  # Contract expiry date (string format)
+    visibility = request.form.get('visibility')  # Visibility (public/private)
+    members = request.form.get('members', '[]')  # List of usernames if private, empty if public
     tasks = request.form.get('tasks')
 
-    # check if input data all good
+    # Validate input data
     if not contract_name or not expiry or not tasks:
-        return jsonify({'error': 'Contract name5 is required'}), 400
+        return jsonify({'error': 'Contract name, expiry, and tasks are required'}), 400
 
     tasks = json.loads(tasks)
     if not tasks or any(task.get('name', '').strip() == '' for task in tasks):
@@ -242,68 +236,86 @@ def create_contract():
     if visibility == 'private' and not members:
         return jsonify({'error': 'Private contracts must have at least one member.'}), 400
 
-    # Upload background image to AWS and retreive URl
+    # Query the current user
+    current_user_obj = User.query.filter_by(username=current_user.username).first()
+    if not current_user_obj:
+        return jsonify({'error': 'Current user not found.'}), 400
+
+    # Upload background image to AWS and retrieve URL
     if background_image:
         filename = secure_filename(background_image.filename)
         address = f'groupPictures/{filename}'
-        s3.upload_fileobj(background_image, bucket, address )
-        # Generate S3 URL
-        groupPicture= f"https://{bucket}.s3.amazonaws.com/{address}"
+        s3.upload_fileobj(background_image, bucket, address)
+        groupPicture = f"https://{bucket}.s3.amazonaws.com/{address}"
     else:
         groupPicture = None
-    
-    # compute some contract details
-    contract_details = contract_details(tasks)
-    progressIntervalsCompleted = {name: 0 for name in members + current_user.username}
 
-    # Create a Contract instance
+    # Compute contract details
+    contract_dets = contract_details(tasks)
+
+    progressIntervalsCompleted = {str(name): 0 for name in members + [current_user.username]}
+
+    lastMessage = {
+                    'sender': current_user.username,
+                    'messageReadBy': [current_user.username],
+                    'timeReceived': datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
+                    'type': 'initiation'
+                }
+
+    # Create the contract instance
     new_contract = Contract(
         active=True,
         startDate=datetime.utcnow().strftime('%Y-%m-%d'),
         endDate=expiry,
         failedMembers=json.dumps([]),
         image=groupPicture,
-        lastMessage=json.dumps({}),
-        members=json.dumps([current_user.username]),
-        invitedUsers=json.dumps(members),
+        lastMessage=json.dumps(lastMessage),
         name=contract_name,
-        progressInterval=contract_details['progressInterval'],
-        progressIntervalDeadline=contract_details['progressIntervalDeadline'],
+        progressInterval=contract_dets['progressInterval'],
+        progressIntervalDeadline=contract_dets['progressIntervalDeadline'],
         progressIntervalsCompleted=json.dumps(progressIntervalsCompleted)
     )
 
-    # Add and commit the contract to the database
+    # Add the current user as a member
+    new_contract.members.append(current_user_obj)
+
+     # Add other users as invited
+    for username in members:
+        user = User.query.filter_by(username=username).first()
+        if user:
+            new_contract.invited_users.append(user)
+
+    # Add the contract to the database
     db.session.add(new_contract)
     db.session.commit()
 
     # Retrieve the contract ID
     contract_id = new_contract.id
 
+    # Add tasks to the database
     for task in tasks:
-        task_details = task_details(task)
-        # Tasks
+        task_dets = task_details(task)
         new_task = Task(
             contract_id=contract_id,
             active=True,
-            interval=task_details['interval'],
-            intervalDeadline=task_details['intervalDeadline'],
-            intervalsTot=get_intervalsTot(contract_details['progressInterval'], task_details['interval']),
+            interval=task_dets['interval'],
+            intervalDeadline=task_dets['intervalDeadline'],
+            intervalsTot=get_intervalsTot(contract_dets['progressInterval'], task_dets['interval']),
             intervalsCompleted=json.dumps(progressIntervalsCompleted),
-            repsTot=task_details['repsTot'],
+            repsTot=task_dets['repsTot'],
             repsCompleted=json.dumps(progressIntervalsCompleted),
-            name=task_details['name']
+            name=task['name']
         )
         db.session.add(new_task)
-    db.session.commit() 
+
+    db.session.commit()
 
     # Return success response with contract ID
     return jsonify({
-        'message': 'Contract and tasks created successfully!',
+        'message': 'Contract created successfully!',
         'contract_id': contract_id,
         'image_path': new_contract.image
     }), 200
-
-
 
 
 @main.route('/get_users', methods=['GET'])

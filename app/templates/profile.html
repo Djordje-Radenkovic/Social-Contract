@@ -14,7 +14,12 @@
         <input type="text" name="username" value="{{ user.username }}" required>
         <button type="submit">Update</button>
     </form>
+    <!-- Add Logout Button -->
+    <form method="GET" action="{{ url_for('main.logout') }}" style="margin-top: 20px;">
+        <button type="submit" class="logout-button">Logout</button>
+    </form>
 </div>
+
 <nav class="bottom-nav">
     <a href="/" class="nav-item">
         <i class="fa-solid fa-file-contract"></i>
