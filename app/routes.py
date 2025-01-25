@@ -7,7 +7,9 @@ from . import db
 from datetime import datetime, timedelta
 import boto3
 from dotenv import load_dotenv
+from app import socketio
 import json
+from flask_socketio import emit, join_room
 import os
 from .helpers import get_next_sunday, task_details, contract_details, get_intervalsTot, format_message_date, format_due_date
 
@@ -200,11 +202,39 @@ def contract_group_chat(contract_id):
         flash("Contract not found.", "danger")
         return redirect(url_for('main.contracts'))
 
-    if current_user not in contract.members:
+    if current_user not in contract.members and current_user not in contract.invited_users:
         flash("You are not a member of this contract.", "danger")
         return redirect(url_for('main.contracts'))
 
     return render_template('group_chat.html', contract=contract, user=current_user)
+
+@main.route('/contract/<int:contract_id>/accept', methods=['POST'])
+@login_required
+def accept_invitation(contract_id):
+    contract = Contract.query.get(contract_id)
+    if not contract or current_user not in contract.invited_users:
+        return jsonify({"error": "Invalid or unauthorized action"}), 403
+
+    # Remove from invited_users and add to members
+    contract.invited_users.remove(current_user)
+    contract.members.append(current_user)
+    db.session.commit()
+
+    return jsonify({"message": "Invitation accepted"})
+
+@main.route('/contract/<int:contract_id>/decline', methods=['POST'])
+@login_required
+def decline_invitation(contract_id):
+    contract = Contract.query.get(contract_id)
+    if not contract or current_user not in contract.invited_users:
+        return jsonify({"error": "Invalid or unauthorized action"}), 403
+
+    # Remove from invited_users
+    contract.invited_users.remove(current_user)
+    db.session.commit()
+
+    return jsonify({"message": "Invitation declined"})
+
 
 
 ############# CONTRACTS ##############
@@ -346,6 +376,8 @@ def send_message():
     contract_id = data.get('contract_id')
     sender_id = data.get('sender_id')
     content = data.get('content')
+    image = request.files.get('image')
+
 
     if not contract_id or not sender_id or not content:
         return jsonify({"error": "Contract ID, sender ID, and content are required"}), 400
@@ -357,9 +389,26 @@ def send_message():
     sender = User.query.get(sender_id)
     if sender not in contract.members:
         return jsonify({"error": "Sender is not a member of this contract"}), 403
+    
+    # Handle image upload to AWS S3
+    media_url = None
+    if image:
+        filename = secure_filename(image.filename)
+        address = f'message_images/{filename}'
+        s3.upload_fileobj(image, bucket, address)
+        media_url = f"https://{bucket}.s3.amazonaws.com/{address}"
 
-    message = Message(content=content, sender_id=sender_id, contract_id=contract_id)
+    message = Message(content=content, sender_id=sender_id, contract_id=contract_id, media_url=media_url)
     db.session.add(message)
+
+    # Update lastMessage in the contract
+    contract.lastMessage = json.dumps({
+        'sender': sender.username,
+        'messageReadBy': [sender.username],
+        'timeReceived': datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
+        'type': 'message'
+    })
+
     db.session.commit()
 
     return jsonify({"message": "Message sent successfully!"}), 201
@@ -386,3 +435,94 @@ def get_messages(contract_id):
         for message in messages.items
     ])
 
+# Socketio messaging
+
+@socketio.on('send_message')
+def handle_send_message(data):
+    contract_id = data.get('contract_id')
+    sender_id = data.get('sender_id')
+    content = data.get('content')
+    media_url = data.get('media_url')
+
+    # Validate inputs
+    if not contract_id or not sender_id or not content:
+        emit('error', {"message": "Contract ID, sender ID, and content are required"}, broadcast=False)
+        return
+
+    # Fetch sender and contract
+    sender = User.query.get(sender_id)
+    if not sender:
+        emit('error', {"message": "Invalid sender ID"}, broadcast=False)
+        return
+
+    contract = Contract.query.get(contract_id)
+    if not contract:
+        emit('error', {"message": "Invalid contract ID"}, broadcast=False)
+        return
+
+    # Check if sender is a member of the contract
+    if sender not in contract.members:
+        emit('error', {"message": "Sender is not a member of the contract"}, broadcast=False)
+        return
+
+    # Save the message
+    message = Message(content=content, sender_id=sender_id, contract_id=contract_id, media_url=media_url)
+    db.session.add(message)
+
+    # Update lastMessage in the contract
+    contract.lastMessage = json.dumps({
+        'sender': sender.username,
+        'messageReadBy': [sender.username],
+        'timeReceived': datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
+        'type': 'message'
+    })
+
+    db.session.commit()
+
+    # Emit the message to the room
+    emit('new_message', {
+        "id": message.id,
+        "content": message.content,
+        "sender_id": message.sender_id,
+        "sender_name": sender.username,  # Use sender directly
+        "created_at": message.created_at.isoformat(),
+        "media_url": message.media_url
+    }, room=f"contract_{contract_id}")
+
+
+@socketio.on('join')
+def handle_join(data):
+    contract_id = data.get('contract_id')
+    join_room(f"contract_{contract_id}")
+
+@main.route('/mark_message_seen/<int:contract_id>', methods=['POST'])
+@login_required
+def mark_message_seen(contract_id):
+    contract = Contract.query.get(contract_id)
+    if not contract:
+        return jsonify({"error": "Contract not found"}), 404
+
+    # Load the current lastMessage
+    last_message = json.loads(contract.lastMessage)
+    if current_user.username not in last_message['messageReadBy']:
+        last_message['messageReadBy'].append(current_user.username)
+
+        # Update the contract's lastMessage
+        contract.lastMessage = json.dumps(last_message)
+        db.session.commit()
+
+    return jsonify({"message": "Message marked as seen"})
+
+@main.route('/upload_image', methods=['POST'])
+@login_required
+def upload_image():
+    image = request.files.get('image')
+    if not image:
+        return jsonify({"error": "No image provided"}), 400
+
+    filename = secure_filename(image.filename)
+    address = f'message_images/{filename}'
+    s3.upload_fileobj(image, bucket, address)
+    media_url = f"https://{bucket}.s3.amazonaws.com/{address}"
+
+    return jsonify({"media_url": media_url}), 201

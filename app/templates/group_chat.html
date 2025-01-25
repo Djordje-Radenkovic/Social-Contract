@@ -1,92 +1,44 @@
 {% extends "base.html" %}
-
-{% block title %}{{ contract.name }} - Group Chat{% endblock %}
-
-{% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/group_chat.css') }}">
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/group.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="top-bar">
-    <h1>{{ contract.name }}</h1>
-</div>
-
-<div class="main-content">
-    <!-- Members Section -->
-    <div class="members">
-        <h3>Members</h3>
-        <p>{{ ", ".join(member.username for member in contract.members) }}</p>
+<a href="/" class="nav-item">Go back</a>
+<div id="chat-container">
+    <div id="chat-window">
+        <ul id="messages">
+            <!-- Messages will be dynamically loaded here -->
+        </ul>
+    </div>
+   
+    <div id="message-input">
+        <textarea id="message-text" placeholder="Type your message..."></textarea>
+        <input id="message-image" type="file" accept="image/*" style="display: none;">
+        <button id="attach-button" onclick="document.getElementById('message-image').click()">📎</button>
+        <button class="send-button" id="send-button">Send</button>
     </div>
 
-    <!-- Chat Messages Section -->
-    <div id="messages" class="messages">
-        <!-- Messages will be dynamically loaded here -->
-        <p>Loading messages...</p>
-    </div>
-
-    <!-- Input Section for Sending Messages -->
-    <form id="message-form" class="message-form">
-        <input type="text" id="message-input" placeholder="Type your message..." required>
-        <button type="submit">Send</button>
-    </form>
+    {% if current_user in contract.invited_users %}
+        <div id="invitation-actions">
+            <button id="accept-button">Accept</button>
+            <button id="decline-button">Decline</button>
+        </div>
+    {% endif %}
 </div>
-
-<!-- Bottom Navigation -->
-<nav class="bottom-nav">
-    <a href="/" class="nav-item">
-        <i class="fa-solid fa-file-contract"></i>
-        <span>Contracts</span>
-    </a>
-    <a href="/progress" class="nav-item">
-        <i class="fa-solid fa-trophy"></i>
-        <span>Progress</span>
-    </a>
-    <a href="/profile" class="nav-item">
-        <i class="fa-solid fa-gear"></i>
-        <span>Profile</span>
-    </a>
-</nav>
 
 <script>
-    const contractId = {{ contract.id }};
-    const userId = {{ user.id }};
+    const contractId = "{{ contract.id }}";
+    const userId = "{{ user.id }}";
 
-    // Fetch Messages
-    async function fetchMessages() {
-        const response = await fetch(`/get_messages/${contractId}`);
-        const messages = await response.json();
-        const messagesDiv = document.getElementById('messages');
-        messagesDiv.innerHTML = messages.map(msg => `
-            <div class="message">
-                <strong>${msg.sender_name}:</strong> ${msg.content} 
-                <span class="timestamp">${new Date(msg.created_at).toLocaleTimeString()}</span>
-            </div>
-        `).join('');
-        messagesDiv.scrollTop = messagesDiv.scrollHeight; // Scroll to the latest message
+    // Check for undefined contractId or userId
+    if (!contractId || !userId) {
+        console.error("Missing contractId or userId!");
     }
-
-    // Send Message
-    document.getElementById('message-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const input = document.getElementById('message-input');
-        const content = input.value;
-
-        const response = await fetch('/send_message', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contract_id: contractId, sender_id: userId, content })
-        });
-
-        if (response.ok) {
-            input.value = ''; // Clear input field
-            fetchMessages(); // Refresh messages
-        }
-    });
-
-    // Load messages on page load
-    fetchMessages();
-
-    // Optional: Refresh messages periodically
-    setInterval(fetchMessages, 5000);
 </script>
+
+<!-- Include Socket.IO client library -->
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<!-- Include your custom JavaScript -->
+<script src="{{ url_for('static', filename='js/group_chat.js') }}"></script>
 {% endblock %}

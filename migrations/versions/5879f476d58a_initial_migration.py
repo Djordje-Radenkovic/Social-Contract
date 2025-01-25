@@ -1,8 +1,8 @@
-"""initial
+"""initial migration
 
-Revision ID: c1f6f6743c20
+Revision ID: 5879f476d58a
 Revises: 
-Create Date: 2025-01-23 23:41:19.668275
+Create Date: 2025-01-24 22:23:26.952460
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c1f6f6743c20'
+revision = '5879f476d58a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -56,9 +56,11 @@ def upgrade():
     op.create_table('messages',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('content', sa.Text(), nullable=False),
-    sa.Column('createdAt', sa.DateTime(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('sender_id', sa.Integer(), nullable=False),
     sa.Column('contract_id', sa.Integer(), nullable=False),
+    sa.Column('media_url', sa.String(length=2083), nullable=True),
+    sa.Column('read_by', sa.JSON(), nullable=False),
     sa.ForeignKeyConstraint(['contract_id'], ['contracts.id'], ),
     sa.ForeignKeyConstraint(['sender_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
