@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block extra_head %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/group.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/group_chat.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -10,12 +10,23 @@
         <ul id="messages">
             <!-- Messages will be dynamically loaded here -->
         </ul>
-    </div>
+    </div>    
    
     <div id="message-input">
+        <select id="task-selector" style="display: none;">
+            <option value="" disabled selected>Select a task</option>
+            <!-- Dynamically populate this list -->
+            {% for task in tasks %}
+                <option value="{{ task.id }}" data-task-name="{{ task.name }}" data-deadline="{{ task.deadline }}">
+                    {{ task.name }}
+                </option>
+            <!-- <option value="{{ task.id }}">{{ task.name }}</option> -->
+            {% endfor %}
+        </select>
         <textarea id="message-text" placeholder="Type your message..."></textarea>
         <input id="message-image" type="file" accept="image/*" style="display: none;">
-        <button id="attach-button" onclick="document.getElementById('message-image').click()">📎</button>
+        <!-- <button id="attach-button" onclick="document.getElementById('message-image').click()">📎</button> -->
+        <button id="attach-button">📎</button>
         <button class="send-button" id="send-button">Send</button>
     </div>
 
@@ -37,8 +48,164 @@
     }
 </script>
 
+
 <!-- Include Socket.IO client library -->
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <!-- Include your custom JavaScript -->
 <script src="{{ url_for('static', filename='js/group_chat.js') }}"></script>
+<script>
+    document.getElementById('attach-button').addEventListener('click', () => {
+        const taskSelector = document.getElementById('task-selector');
+        taskSelector.style.display = 'block'; // Show the dropdown
+        taskSelector.focus(); // Focus on it
+    });
+
+    document.getElementById('task-selector').addEventListener('change', () => {
+        const selectedTask = document.getElementById('task-selector').value;
+        const selectedTaskName = document.getElementById('task-selector').selectedOptions[0].getAttribute('data-task-name'); 
+
+        if (selectedTask) {
+
+            window.selectedTaskId = selectedTask;
+            window.selectedTaskName = selectedTaskName;
+            
+            document.getElementById('message-image').click(); // Trigger file input after task selection
+            document.getElementById('task-selector').style.display = 'none'; // Hide dropdown again
+        }
+    });
+
+    document.getElementById('message-image').addEventListener('change', function () {
+    const fileInput = this;
+    const attachmentPreview = document.getElementById('attachment-preview') || createAttachmentPreview();
+
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            attachmentPreview.innerHTML = `<img src="${e.target.result}" alt="Attachment" style="max-height: 100px; margin-bottom: 5px;"> <button onclick="removeAttachment()">Remove</button>`;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+function createAttachmentPreview() {
+    const preview = document.createElement('div');
+    preview.id = 'attachment-preview';
+    preview.style.marginBottom = '10px';
+    document.getElementById('message-input').insertAdjacentElement('beforebegin', preview);
+    return preview;
+}
+
+function removeAttachment() {
+    const preview = document.getElementById('attachment-preview');
+    if (preview) {
+        preview.remove();
+        document.getElementById('message-image').value = ''; // Clear file input
+    }
+}
+
+document.getElementById('send-button').addEventListener('click', () => {
+    const messageText = document.getElementById('message-text').value.trim();
+    const imageFile = document.getElementById('message-image').files[0]; // Get the image file
+    const messagesList = document.getElementById('messages'); // Group chat message container
+    const username = "{{ user.username }}"; // Pass the username to the frontend
+
+    // 1. Send the text message immediately (if it exists)
+    if (messageText) {
+        socket.emit('send_message', {
+            contract_id: contractId,
+            sender_id: userId,
+            content: messageText,
+            media_url: null
+        });
+
+        // Clear the text input immediately
+        document.getElementById('message-text').value = "";
+    }
+
+    // 2. Handle the image upload and display immediately (if it exists)
+    if (imageFile) {
+        removeAttachment(); // Remove the file preview
+        const reader = new FileReader();
+        const tempImgId = `temp-${Date.now()}`; // Unique ID for the temporary image
+
+        reader.onload = function (e) {
+
+            const li = document.createElement('li');
+            li.id = `temp-li-${tempImgId}`; // Temporary <li> ID for cleanup later
+            li.classList.add('completion-message');
+            li.style.display = 'flex';
+            li.style.flexDirection = 'column';
+            li.style.marginBottom = '10px';
+
+            // Add the sender's name
+            const senderName = document.createElement('span');
+            //senderName.textContent = username;
+            /////////////////////
+            senderName.textContent = `${username} completed task: ${window.selectedTaskName} !`; // Include the task name in the placeholder text
+            /////////////////////
+
+            li.appendChild(senderName);
+
+            // Add the placeholder image
+            const imgElement = document.createElement('img');
+            imgElement.src = e.target.result; // Temporary image preview
+            imgElement.alt = "Uploading...";
+            imgElement.id = tempImgId; // Assign a temporary ID
+            imgElement.style.maxWidth = "200px";
+            imgElement.style.maxHeight = "200px";
+            li.appendChild(imgElement);
+         
+
+            messagesList.appendChild(li);
+            messagesList.scrollTop = messagesList.scrollHeight; // Scroll to the bottom
+        };
+
+        reader.readAsDataURL(imageFile); // Load the image as a preview
+
+        // Upload the image to the backend (combined with message creation)
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        formData.append('contract_id', contractId); // Pass contract ID
+        formData.append('sender_id', userId); // Pass sender ID
+        /////////////////////
+        formData.append('task_id', window.selectedTaskId); // Pass the selected task ID
+        /////////////////////
+
+        fetch('/upload_image', {
+            method: 'POST',
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error("Error uploading image:", data.error);
+                    alert("Error uploading image.");
+                    document.getElementById(`temp-li-${tempImgId}`)?.remove(); // Remove the temp image on failure
+                    return;
+                }
+
+                // Replace the temporary image with the actual uploaded image URL
+                const tempImg = document.getElementById(tempImgId);
+                if (tempImg) {
+                    tempImg.src = data.media_url;
+                    tempImg.alt = "Uploaded Image";
+                }
+
+                // Remove the temporary <li> after real message is emitted
+                document.getElementById(`temp-li-${tempImgId}`)?.remove();
+            })
+            .catch(error => {
+                console.error("Error uploading image:", error);
+                document.getElementById(`temp-li-${tempImgId}`)?.remove(); // Remove the temp image on failure
+            });
+
+        // Clear the file input immediately
+        document.getElementById('message-image').value = "";
+    }
+});
+
+</script>
+
 {% endblock %}

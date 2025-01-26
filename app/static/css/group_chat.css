@@ -104,3 +104,8 @@ body {
     cursor: pointer;
     font-size: 18px;
 }
+
+
+/* Here add how completion message should look */
+.completion-message {
+}

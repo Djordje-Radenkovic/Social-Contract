@@ -69,13 +69,15 @@ class Message(db.Model):
     __tablename__ = 'messages'
 
     id = db.Column(db.Integer, primary_key=True)  # Unique message ID
-    content = db.Column(db.Text, nullable=False)  # Text content of the message
+    content = db.Column(db.Text, nullable=True)  # Text content of the message
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  # Timestamp when the message was created
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Foreign key for the sender
     contract_id = db.Column(db.Integer, db.ForeignKey('contracts.id'), nullable=False)  # Foreign key for the contract
     media_url = db.Column(db.String(2083), nullable=True)  # URL for any media (e.g., images) sent with the message
     read_by = db.Column(db.JSON, default=list, nullable=False)  # List of usernames who have read the message
+    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=True)  # Foreign key for the related task
 
     # Relationships
     sender = db.relationship('User', backref='messages')  # Access the sender as an object
+    task = db.relationship('Task', backref='messages')  # Access the task as an object
 
