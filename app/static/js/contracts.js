@@ -392,3 +392,51 @@ function getRandomColor() {
 document.addEventListener('DOMContentLoaded', () => {
     toggleVisibility('public');
 });
+
+
+////////////////////////////////////
+function handleTaskClick(taskId, taskName, contractId, userId) {
+    // Log the received parameters for debugging
+    console.log("Received taskId:", taskId);
+    console.log("Received taskName:", taskName);
+    console.log("Received contractId:", contractId);
+    console.log("Received userId:", userId);
+
+    const fileInput = document.getElementById('fileInput');
+    fileInput.click(); // Trigger the file picker
+
+    fileInput.onchange = function (event) {
+        const file = event.target.files[0];
+        if (!file) return; // Exit if no file is selected
+
+        // Prepare the form data
+        const formData = new FormData();
+        formData.append('image', file); // Append the image file
+        formData.append('contract_id', contractId); // Add the contract ID
+        formData.append('sender_id', userId); // Add the sender ID
+        formData.append('task_id', taskId); // Add the task ID
+        window.location.href = `/contract/${contractId}`;
+
+        
+        // Make the POST request to upload the image
+        fetch('/upload_image', {
+            method: 'POST',
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error("Error uploading image:", data.error);
+                    alert("Error uploading image.");
+                } else {
+                    console.log("Image uploaded successfully:", data.media_url);
+                    alert(`Task "${taskName}" has been completed!`);
+
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+    };
+}
+

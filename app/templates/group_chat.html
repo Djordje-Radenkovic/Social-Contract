@@ -54,6 +54,7 @@
 <!-- Include your custom JavaScript -->
 <script src="{{ url_for('static', filename='js/group_chat.js') }}"></script>
 <script>
+
     document.getElementById('attach-button').addEventListener('click', () => {
         const taskSelector = document.getElementById('task-selector');
         taskSelector.style.display = 'block'; // Show the dropdown
@@ -61,16 +62,21 @@
     });
 
     document.getElementById('task-selector').addEventListener('change', () => {
-        const selectedTask = document.getElementById('task-selector').value;
-        const selectedTaskName = document.getElementById('task-selector').selectedOptions[0].getAttribute('data-task-name'); 
+        const taskSelector = document.getElementById('task-selector');
+        const selectedTask = taskSelector.value;
+        const selectedTaskName = taskSelector.selectedOptions[0]?.getAttribute('data-task-name');
 
         if (selectedTask) {
-
+            // Save the selected task globally
             window.selectedTaskId = selectedTask;
             window.selectedTaskName = selectedTaskName;
-            
-            document.getElementById('message-image').click(); // Trigger file input after task selection
-            document.getElementById('task-selector').style.display = 'none'; // Hide dropdown again
+
+            // Trigger the file input for image selection
+            document.getElementById('message-image').click();
+
+            // Reset the task selector to its default state
+            taskSelector.selectedIndex = 0; // Reset to the default "Select a task" option
+            taskSelector.style.display = 'none'; // Hide the dropdown after selection
         }
     });
 
@@ -86,8 +92,8 @@
             attachmentPreview.innerHTML = `<img src="${e.target.result}" alt="Attachment" style="max-height: 100px; margin-bottom: 5px;"> <button onclick="removeAttachment()">Remove</button>`;
         };
         reader.readAsDataURL(file);
-    }
-});
+        }
+    });
 
 function createAttachmentPreview() {
     const preview = document.createElement('div');
@@ -141,10 +147,7 @@ document.getElementById('send-button').addEventListener('click', () => {
 
             // Add the sender's name
             const senderName = document.createElement('span');
-            //senderName.textContent = username;
-            /////////////////////
             senderName.textContent = `${username} completed task: ${window.selectedTaskName} !`; // Include the task name in the placeholder text
-            /////////////////////
 
             li.appendChild(senderName);
 
@@ -156,11 +159,11 @@ document.getElementById('send-button').addEventListener('click', () => {
             imgElement.style.maxWidth = "200px";
             imgElement.style.maxHeight = "200px";
             li.appendChild(imgElement);
-         
 
             messagesList.appendChild(li);
             messagesList.scrollTop = messagesList.scrollHeight; // Scroll to the bottom
         };
+        
 
         reader.readAsDataURL(imageFile); // Load the image as a preview
 
@@ -169,9 +172,7 @@ document.getElementById('send-button').addEventListener('click', () => {
         formData.append('image', imageFile);
         formData.append('contract_id', contractId); // Pass contract ID
         formData.append('sender_id', userId); // Pass sender ID
-        /////////////////////
         formData.append('task_id', window.selectedTaskId); // Pass the selected task ID
-        /////////////////////
 
         fetch('/upload_image', {
             method: 'POST',
@@ -205,6 +206,12 @@ document.getElementById('send-button').addEventListener('click', () => {
         document.getElementById('message-image').value = "";
     }
 });
+
+//////////////////////////
+
+
+
+
 
 </script>
 

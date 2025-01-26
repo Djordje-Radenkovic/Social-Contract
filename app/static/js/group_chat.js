@@ -21,9 +21,9 @@ function loadMessages() {
                     img.alt = "Image";
                     img.style.maxWidth = "200px"; // Adjust as needed
                     img.style.maxHeight = "200px";
-                    li.appendChild(img);
                     const textNode = document.createTextNode(`${msg.sender_name} completed task: ${msg.task_name} !`);
                     li.appendChild(textNode);
+                    li.appendChild(img);
                 } 
 
                 // Check if the message has content
@@ -42,7 +42,9 @@ function loadMessages() {
         });
 }
 
+
 loadMessages(); // Fetch existing messages on page load
+
 
 // WebSocket connection
 const socket = io();
@@ -59,6 +61,11 @@ socket.on('new_message', (msg) => {
     li.style.flexDirection = 'column';
     li.style.marginBottom = '10px';
 
+    // Add the text if content is present
+    if (msg.content) {
+        const textNode = document.createTextNode(`${msg.sender_name}: ${msg.content}`);
+        li.appendChild(textNode);
+    }
     // Add the image if media_url is present
     if (msg.media_url) {
         li.classList.add('completion-message');
@@ -68,15 +75,9 @@ socket.on('new_message', (msg) => {
         img.style.maxWidth = "200px";
         img.style.maxHeight = "200px";
         img.loading = "lazy";
-        li.appendChild(img);
         const textNode = document.createTextNode(`${msg.sender_name} completed task: ${msg.task_name} !`);
         li.appendChild(textNode);
-    }
-
-    // Add the text if content is present
-    if (msg.content) {
-        const textNode = document.createTextNode(`${msg.sender_name}: ${msg.content}`);
-        li.appendChild(textNode);
+        li.appendChild(img);
     }
 
     messagesList.appendChild(li);

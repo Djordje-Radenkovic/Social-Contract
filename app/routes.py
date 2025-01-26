@@ -132,7 +132,8 @@ def contracts():
                 "image": contract.image,
                 "lastMessage": format_message_date(json.loads(contract.lastMessage)),
                 "tasks": [
-                    {
+                    {   
+                        "id": task.id,
                         "name": task.name,
                         "repsTotal": task.repsTot,
                         "repsCompleted": json.loads(task.repsCompleted)[current_user.username],
@@ -423,6 +424,7 @@ def get_messages(contract_id):
         return jsonify({"error": "Contract not found"}), 404
 
     messages = Message.query.filter_by(contract_id=contract_id).order_by(Message.created_at).paginate(page=page, per_page=per_page)
+
     return jsonify([
         {
             "id": message.id,
@@ -430,7 +432,8 @@ def get_messages(contract_id):
             "sender_id": message.sender_id,
             "sender_name": message.sender.username,
             "created_at": message.created_at.isoformat(),
-            "media_url": message.media_url
+            "media_url": message.media_url,
+            "task_name": Task.query.get(message.task_id).name if Task.query.get(message.task_id) else None
         }
         for message in messages.items
     ])
@@ -537,6 +540,8 @@ def upload_image():
     sender_id = request.form.get('sender_id')  # Pass sender_id from frontend
     task_id = request.form.get('task_id')
 
+    print('received task id:', task_id)
+
     # Save the message with the media URL in the database
     contract = Contract.query.get(contract_id)
     if not contract:
@@ -552,6 +557,13 @@ def upload_image():
         task = Task.query.get(task_id)
         if not task:
             return jsonify({"error": "Task not found"}), 404
+        
+         # Update repsCompleted dictionary
+        reps_completed = json.loads(task.repsCompleted)
+        reps_completed[current_user.username] += 1
+        task.repsCompleted = json.dumps(reps_completed)
+    
+
 
     # Create the message object
     message = Message(content=None,  # No text

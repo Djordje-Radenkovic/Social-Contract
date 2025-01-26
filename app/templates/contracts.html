@@ -78,9 +78,9 @@
             </div>
             <div class="tasks">
                 {% for task in contract.tasks %}
-                    <a  class="task" onclick="openFileUpload({{ task.id }})" 
-                    style="position: relative; background-color: white; overflow: hidden;">
-                        
+
+                    <a class="task" onclick="handleTaskClick('{{ task.id }}', '{{ task.name }}', '{{ contract.id }}', '{{ current_user.id }}')" style="position: relative; background-color: white; overflow: hidden;">
+                 
                         <!-- Blue Overlay for Progress -->
                         {% if task.repsTotal > 0 %}
                             <div style="
