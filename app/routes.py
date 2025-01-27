@@ -9,6 +9,7 @@ import boto3
 from dotenv import load_dotenv
 from app import socketio
 import json
+import pytz
 from flask_socketio import emit, join_room
 import os
 from .helpers import get_next_sunday, task_details, contract_details, get_intervalsTot, format_message_date, format_due_date
@@ -126,11 +127,12 @@ def contracts():
     contracts = [
             {
                 "id": contract.id,
+                "active": contract.active,
                 "name": contract.name,
                 "progressInterval": interval_map[contract.progressInterval],
                 "progressIntervalsCompleted": json.loads(contract.progressIntervalsCompleted)[current_user.username],
                 "image": contract.image,
-                "lastMessage": format_message_date(json.loads(contract.lastMessage)),
+                "lastMessage": format_message_date(json.loads(contract.lastMessage), current_user.timezone),
                 "tasks": [
                     {   
                         "id": task.id,
@@ -239,6 +241,24 @@ def decline_invitation(contract_id):
     db.session.commit()
 
     return jsonify({"message": "Invitation declined"})
+
+
+@main.route('/set_timezone', methods=['POST'])
+@login_required
+def set_timezone():
+    data = request.get_json()
+    timezone = data.get('timezone')
+
+    # Validate the timezone
+    if timezone not in pytz.all_timezones:
+        return jsonify({"error": "Invalid timezone"}), 400
+
+    # Update the user's timezone in the database
+    user = current_user  # Assuming Flask-Login is being used
+    user.timezone = timezone
+    db.session.commit()
+
+    return jsonify({"message": "Timezone updated successfully"}), 200
 
 
 
@@ -540,7 +560,6 @@ def upload_image():
     sender_id = request.form.get('sender_id')  # Pass sender_id from frontend
     task_id = request.form.get('task_id')
 
-    print('received task id:', task_id)
 
     # Save the message with the media URL in the database
     contract = Contract.query.get(contract_id)
@@ -563,7 +582,13 @@ def upload_image():
         reps_completed[current_user.username] += 1
         task.repsCompleted = json.dumps(reps_completed)
     
-
+     # Update lastMessage in the contract
+    contract.lastMessage = json.dumps({
+        'sender': sender.username,
+        'messageReadBy': [sender.username],
+        'timeReceived': datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
+        'type': 'completion'
+    })
 
     # Create the message object
     message = Message(content=None,  # No text

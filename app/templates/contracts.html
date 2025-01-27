@@ -37,87 +37,88 @@
 <!-- Contracts Section -->
 <div class="contracts">
     {% for contract in contracts %}
-        <div class="contract-card">
-            
-            <div class="contract-header">
-                <!-- <img src="{{ contract.image }}" alt="{{ contract.name }}"> -->
-                <div class="story-border">
-                    <div class="story-inner-wrapper">
-                        <!-- Instead of using contract.image directly -->
-                       
-                        <div class="story-inner" style="background-image: url('{{ contract.image }}');"></div>
-                    </div>
-                </div>
-                <!-- <a href="{{ url_for('main.contract_group_chat', contract_id=contract.id) }}" class="contract-card-link"> -->
-                    <a href="{{ url_for('main.contract_group_chat', contract_id=contract.id) }}" class="contract-card-body">
-                        <div class="contract-card-header">
-                                <h2>{{ contract.name }}</h2>
-                                <p>{{ contract.progressInterval}} {{ contract.progressIntervalsCompleted + 1 }} 🔥</p>                        
-                        </div>
-                        <p class="{{ 'red-message' if current_user.username in contract.lastMessage.messageReadBy else 'unred-message' }}">
-                            {% if not current_user.username in contract.lastMessage.messageReadBy %}
-                                <span style="display: inline-block; width: 5px; height: 5px; background-color: #FE0063; border-radius: 50%;  vertical-align: middle;"></span>
-                    
-                            {% endif %}
-                            {% if current_user.username == contract.lastMessage.sender %}
-                                You
-                            {% else %}
-                                {{ contract.lastMessage.sender }} 
-                            {% endif %}
-                            {% if contract.lastMessage.type == 'completion' %}
-                                completed a task
-                            {% elif contract.lastMessage.type == 'message' %}
-                                sent a message
-                            {% elif contract.lastMessage.type == 'initiation' %}
-                                created a contract!
-                            {% endif %}
-                            <span class="time">• {{ contract.lastMessage.timeReceived }}</span>
-                        </p>
-                    </a>
-                <!-- </a> -->
-            </div>
-            <div class="tasks">
-                {% for task in contract.tasks %}
-
-                    <a class="task" onclick="handleTaskClick('{{ task.id }}', '{{ task.name }}', '{{ contract.id }}', '{{ current_user.id }}')" style="position: relative; background-color: white; overflow: hidden;">
-                 
-                        <!-- Blue Overlay for Progress -->
-                        {% if task.repsTotal > 0 %}
-                            <div style="
-                                position: absolute; 
-                                top: 0; 
-                                left: 0; 
-                                height: 100%; 
-                                width: {{ (task.repsCompleted / task.repsTotal) * 100 }}%; 
-                                background-color: #DAF2FF; 
-                                border-top-right-radius: 17px; 
-                                border-bottom-right-radius: 17px; 
-                                z-index: 0;">
-                            </div>
-                        {% endif %}
+        {% if contract.active %}
+            <div class="contract-card">                
+                <div class="contract-header">
+                    <!-- <img src="{{ contract.image }}" alt="{{ contract.name }}"> -->
+                    <div class="story-border">
+                        <div class="story-inner-wrapper">
+                            <!-- Instead of using contract.image directly -->
                         
-                        <!-- Task Content -->
-                        <div class="task-content">
-                            <div class="task-left">
-                                {% if task.repsCompleted == task.repsTotal %}
-                                    <i class="fa-solid fa-square-check fa-lg" style="color: var(--blue);"></i>
-                                {% else %}
-                                    <span style="display: inline-block; width: 17px; height: 17px; background-color: transparent; border-radius: 4px; border: 1px solid var(--blue); vertical-align: middle;"></span>
-                                {% endif %}
-                                <span class="task-name" style="margin-left: 5px;">{{ task.name }}</span>
-                                {% if task.repsTotal > 1 and task.repsCompleted > 0 %}
-                                    ({{ task.repsCompleted }}/{{ task.repsTotal }})
-                                {% endif %}
-                            </div>
-                            
-                            <div class="task-right">
-                                {{ task.intervalDeadline }}
-                            </div>
+                            <div class="story-inner" style="background-image: url('{{ contract.image }}');"></div>
                         </div>
-                    </a>
-                {% endfor %}
-            </div>            
-        </div>
+                    </div>
+                    <!-- <a href="{{ url_for('main.contract_group_chat', contract_id=contract.id) }}" class="contract-card-link"> -->
+                        <a href="{{ url_for('main.contract_group_chat', contract_id=contract.id) }}" class="contract-card-body">
+                            <div class="contract-card-header">
+                                    <h2>{{ contract.name }}</h2>
+                                    <p>{{ contract.progressInterval}} {{ contract.progressIntervalsCompleted + 1 }} 🔥</p>                        
+                            </div>
+                            <p class="{{ 'red-message' if current_user.username in contract.lastMessage.messageReadBy else 'unred-message' }}">
+                                {% if not current_user.username in contract.lastMessage.messageReadBy %}
+                                    <span style="display: inline-block; width: 5px; height: 5px; background-color: #FE0063; border-radius: 50%;  vertical-align: middle;"></span>
+                        
+                                {% endif %}
+                                {% if current_user.username == contract.lastMessage.sender %}
+                                    You
+                                {% else %}
+                                    {{ contract.lastMessage.sender }} 
+                                {% endif %}
+                                {% if contract.lastMessage.type == 'completion' %}
+                                    completed a task
+                                {% elif contract.lastMessage.type == 'message' %}
+                                    sent a message
+                                {% elif contract.lastMessage.type == 'initiation' %}
+                                    created a contract!
+                                {% endif %}
+                                <span class="time">• {{ contract.lastMessage.timeReceived }}</span>
+                            </p>
+                        </a>
+                    <!-- </a> -->
+                </div>
+                <div class="tasks">
+                    {% for task in contract.tasks %}
+
+                        <a class="task" onclick="handleTaskClick('{{ task.id }}', '{{ task.name }}', '{{ contract.id }}', '{{ current_user.id }}')" style="position: relative; background-color: white; overflow: hidden;">
+                    
+                            <!-- Blue Overlay for Progress -->
+                            {% if task.repsTotal > 0 %}
+                                <div style="
+                                    position: absolute; 
+                                    top: 0; 
+                                    left: 0; 
+                                    height: 100%; 
+                                    width: {{ (task.repsCompleted / task.repsTotal) * 100 }}%; 
+                                    background-color: #DAF2FF; 
+                                    border-top-right-radius: 17px; 
+                                    border-bottom-right-radius: 17px; 
+                                    z-index: 0;">
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Task Content -->
+                            <div class="task-content">
+                                <div class="task-left">
+                                    {% if task.repsCompleted >= task.repsTotal %}
+                                        <i class="fa-solid fa-square-check fa-lg" style="color: var(--blue);"></i>
+                                    {% else %}
+                                        <span style="display: inline-block; width: 17px; height: 17px; background-color: transparent; border-radius: 4px; border: 1px solid var(--blue); vertical-align: middle;"></span>
+                                    {% endif %}
+                                    <span class="task-name" style="margin-left: 5px;">{{ task.name }}</span>
+                                    {% if task.repsTotal > 1 and task.repsCompleted > 0 %}
+                                        ({{ task.repsCompleted }}/{{ task.repsTotal }})
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="task-right">
+                                    {{ task.intervalDeadline }}
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>            
+            </div>
+        {% endif %}
     {% endfor %}
 </div>
 
@@ -139,6 +140,29 @@
 </nav>
 <script src="{{ url_for('static', filename='js/contracts.js') }}"></script>
 <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
+      // Send the timezone to the server
+      fetch('/set_timezone', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ timezone })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("Timezone updated:", data.message);
+      })
+      .catch(error => {
+        console.error("Error updating timezone:", error);
+      });
+    });
+  </script>
+  
+<script>
+    
     // Select the top bar element
     const topBar = document.querySelector('.top-fixed');
 

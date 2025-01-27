@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import pytz
 
 def format_due_date(date_str):
     # Convert the input string to a date object
@@ -16,12 +17,25 @@ def format_due_date(date_str):
         month = due_date.strftime("%b")  # Abbreviated month
         return f"By {day} {month}"  # Outputs e.g., "By 6 Jan"
 
-def format_message_date(lastMessage):
+def format_message_date(lastMessage, user_timezone):
     
     message_date_str = lastMessage["timeReceived"]
     
     # Convert the date string to a datetime object
     message_date = datetime.strptime(message_date_str, "%Y-%m-%d %H:%M")
+
+    # If the user's timezone exists, convert to that timezone
+    if user_timezone:
+        try:
+            user_tz = pytz.timezone(user_timezone)  # Get the user's timezone
+            utc = pytz.utc  # UTC timezone
+            message_date = utc.localize(message_date)  # Localize the message date to UTC
+            message_date = message_date.astimezone(user_tz)  # Convert to user's timezone
+        except pytz.UnknownTimeZoneError:
+            print(f"Unknown timezone: {user_timezone}. Falling back to UTC.")
+            pass  # Leave the message_date in UTC if the timezone is invalid
+    
+
     today = datetime.utcnow()
 
     # Check if the message date is today

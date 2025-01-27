@@ -19,6 +19,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(201), nullable=False)
+    timezone = db.Column(db.String(50), nullable=True)  # Add this field
     # relationships
     contracts = db.relationship('Contract', secondary=contract_members, back_populates='members')
     invited_to = db.relationship('Contract', secondary=invited_users, back_populates='invited_users')
