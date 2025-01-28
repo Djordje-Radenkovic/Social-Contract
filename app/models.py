@@ -38,6 +38,7 @@ class Contract(db.Model):
     progressInterval = db.Column(db.String(20), nullable=False)
     progressIntervalDeadline = db.Column(db.String(10), nullable=False)
     progressIntervalsCompleted = db.Column(db.Text, default=json.dumps({}), nullable=False)
+    visibility = db.Column(db.String(10), default='private', nullable=False)  # New column
 
     # Relationships
     members = db.relationship('User', secondary=contract_members, back_populates='contracts')

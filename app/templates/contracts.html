@@ -22,14 +22,17 @@
 <div class="stories-container">
     <div class="stories">
         {% for story in stories %}
-        <div class="story">
+        <a href="{{ url_for('main.contract_stories', contract_id=story.id) }}" class="story">
             <div class="story-border">
                 <div class="story-inner-wrapper">
-                    <div class="story-inner" style="background-image: url('{{ story.background_image }}');"></div>
+                    <div class="story-inner" 
+                            style="background-image: url('{{ story.image or "https://picsum.photos/300?random=" + story.name[0] + "&theme=water" }}');">
+                    </div>
+                    <!-- <div class="story-inner" style="background-image: url('{{ story.image }}');"></div> -->
                 </div>
             </div>
-            <p class="story-title">{{ story.title }}</p>
-        </div>
+            <p class="story-title">{{ story.name }}</p>
+        </a>
         {% endfor %}
     </div>
 </div>
@@ -41,13 +44,24 @@
             <div class="contract-card">                
                 <div class="contract-header">
                     <!-- <img src="{{ contract.image }}" alt="{{ contract.name }}"> -->
-                    <div class="story-border">
-                        <div class="story-inner-wrapper">
-                            <!-- Instead of using contract.image directly -->
+                    <a href="{{ url_for('main.contract_stories', contract_id=contract.id) }}" class="story">
+                        <div class="story-border" style="background: {% if not contract.has_stories %} lightgrey {% endif %};">
+                            <div class="story-inner-wrapper">
+                                <!-- Instead of using contract.image directly -->
 
-                            <div class="story-inner" style="background-image: url('{{ contract.image }}');"></div>
+                            
+                                <div class="story-inner" 
+                                        style="background-image: url('{{ contract.image or "https://picsum.photos/300?random=" + contract.name[0] + "&theme=water" }}');">
+                                </div>
+                        
+                                <!-- <div class="story-inner" style="background-image: url('{{ contract.image or "https://picsum.photos/300" }}');"></div> -->
+
+                                <!-- <div class="story-inner" style="background-image: url('{{ contract.image or "https://robohash.org/" + contract.id|string + ".png?size=300x300" }}');"></div> -->
+
+                                <!-- <div class="story-inner" style="background-image: url('{{ contract.image }}');"></div> -->
+                            </div>
                         </div>
-                    </div>
+                    </a>
                     <!-- <a href="{{ url_for('main.contract_group_chat', contract_id=contract.id) }}" class="contract-card-link"> -->
                         <a href="{{ url_for('main.contract_group_chat', contract_id=contract.id) }}" class="contract-card-body">
                             <div class="contract-card-header">

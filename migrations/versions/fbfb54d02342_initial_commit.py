@@ -1,8 +1,8 @@
-"""initial
+"""Initial commit
 
-Revision ID: 2d73257e50de
+Revision ID: fbfb54d02342
 Revises: 
-Create Date: 2025-01-28 02:24:54.608294
+Create Date: 2025-01-28 22:13:12.656903
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '2d73257e50de'
+revision = 'fbfb54d02342'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -30,6 +30,7 @@ def upgrade():
     sa.Column('progressInterval', sa.String(length=20), nullable=False),
     sa.Column('progressIntervalDeadline', sa.String(length=10), nullable=False),
     sa.Column('progressIntervalsCompleted', sa.Text(), nullable=False),
+    sa.Column('visibility', sa.String(length=10), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user',

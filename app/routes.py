@@ -45,84 +45,32 @@ def contracts():
     # Query contracts the user is invited to
     invited_contracts = Contract.query.filter(Contract.invited_users.any(id=current_user.id)).all()
 
-    stories = [
-        {"title": "Daily TikTok Post", "background_image": "/static/dummy_images/tiktok.jpg"},
-        {"title": "Hackathon", "background_image": "/static/dummy_images//hackathon.jpg"},
-        {"title": "Breakup Aid", "background_image": "/static/dummy_images//breakup.jpg"},
-        {"title": "Running Club", "background_image": "/static/dummy_images//running.jpg"},
-        {"title": "Digital Detox", "background_image": "/static/dummy_images//detox.jpg"},
-        {"title": "Gym Bros", "background_image": "/static/dummy_images//gym.jpg"},
-        {"title": "Meditation", "background_image": "/static/dummy_images//meditation.jpg"},
-    ]
+    public_stories_contracts = (
+        db.session.query(Contract)
+        .join(Message)
+        .filter(Contract.visibility == 'public')
+        .filter(Message.contract_id == Contract.id, Message.media_url.isnot(None))
+        .distinct()
+        .all()
+    )
 
-    contracts = 2*[
+    # Map public stories data
+    stories = [
         {
-            "id": '12345',
-            "name": "Daily 5k run",
-            "progressInterval": "Week",
-            "progressIntervalsCompleted": 3,
-            'image': "static/dummy_images/Masha.jpg",
-            'lastMessage': {
-                'sender':'Masha',
-                'messageReadByMe': False,
-                'timeReceived': '13:43',
-                'type': 'completion'
-            },
-            'tasks': [
-                {
-                    'name': 'Go for a run',
-                    'repsTotal': 3,
-                    'repsCompleted': 2,
-                    'intervalDeadline': 'by Sunday'
-                },
-                {   
-                    'name': 'Eat protein',
-                    'repsTotal': 1,
-                    'repsCompleted': 0,
-                    'intervalDeadline': 'Today'
-                },
-                {
-                    'name': 'Run a 10k',
-                    'repsTotal': 1,
-                    'repsCompleted': 1,
-                    'intervalDeadline': 'by Friday'
-                }
-            ]
-         },
-         {  
-             'id': '123456',
-             'name': 'Digital Detox',
-             'progressInterval': 'Day',
-             'progressIntervalsCompleted': 31,
-             'image': 'static/dummy_images/Bogdan.jpg',
-             'lastMessage': {
-                'sender':'Bogdan',
-                'messageReadByMe': True,
-                'timeReceived': '12:31',
-                'type': 'message'
-            },
-            'tasks': [
-                {
-                    'name': 'No Youtube',
-                    'repsTotal': 1,
-                    'repsCompleted': 0,
-                    'intervalDeadline': 'Today'
-                },
-                {
-                    'name': 'No podcasts',
-                    'repsTotal': 1,
-                    'repsCompleted': 1,
-                    'intervalDeadline': 'Today'
-                }
-            ]
-         }
+            "id": contract.id,
+            "name": contract.name,
+            "image": contract.image,
+        }
+        for contract in public_stories_contracts
     ]
+   
 
     interval_map = {
         "daily": 'Day',
         'weekly': 'Week',
         'once': 'Milestone'
     }
+
 
     contracts = [
             {
@@ -142,7 +90,12 @@ def contracts():
                         "intervalDeadline": format_due_date(task.intervalDeadline)
                     }
                     for task in contract.tasks 
-                ]
+                ],
+                "has_stories": len(
+                    Message.query.filter_by(contract_id=contract.id)
+                    .filter(Message.media_url.isnot(None))
+                    .all()
+                ) > 0
             }
             for contract in member_contracts + invited_contracts
     ]
@@ -328,7 +281,8 @@ def create_contract():
         name=contract_name,
         progressInterval=contract_dets['progressInterval'],
         progressIntervalDeadline=contract_dets['progressIntervalDeadline'],
-        progressIntervalsCompleted=json.dumps(progressIntervalsCompleted)
+        progressIntervalsCompleted=json.dumps(progressIntervalsCompleted),
+        visibility= visibility
     )
 
     # Add the current user as a member
@@ -614,3 +568,54 @@ def upload_image():
     ################################
 
     return jsonify({"media_url": media_url}), 201
+
+############## CONTRACT STORIES ################
+
+@main.route('/contract/<int:contract_id>/stories')
+def contract_stories(contract_id):
+    contract = Contract.query.get_or_404(contract_id)
+    messages = Message.query.filter_by(contract_id=contract_id).filter(Message.media_url.isnot(None)).all()
+    user_is_member = current_user.username in [user.username for user in contract.members]
+    print('user is mamber', user_is_member)
+    stories = [
+        {
+            "media_url": message.media_url,
+            "username": message.sender.username,
+            "timestamp": message.created_at,
+            "task_name": Task.query.get(message.task_id).name if message.task_id else None
+        }
+        for message in messages
+    ]
+    return render_template('contract_stories.html', contract=contract, stories=stories, user_is_member=user_is_member)
+
+@main.route('/join_contract/<int:contract_id>', methods=['POST'])
+@login_required
+def join_contract(contract_id):
+    contract = Contract.query.get_or_404(contract_id)
+
+    if contract.visibility != 'public':
+        return jsonify({"success": False, "error": "Contract is private"}), 403
+
+    if current_user in contract.members:
+        return jsonify({"success": False, "error": "You are already a member"}), 400
+
+    # Add the user to the contract
+    contract.members.append(current_user)
+
+     # Update progressIntervalsCompleted
+    progress_intervals = json.loads(contract.progressIntervalsCompleted)
+    if current_user.username not in progress_intervals:
+        progress_intervals[current_user.username] = 0  # Initialize progress for the user
+        contract.progressIntervalsCompleted = json.dumps(progress_intervals)
+
+    for task in contract.tasks:
+        reps_completed = json.loads(task.repsCompleted)
+
+        if current_user.username not in reps_completed:
+            reps_completed[current_user.username] = 0  # Initialize progress for the user
+
+        task.repsCompleted = json.dumps(reps_completed)
+
+    db.session.commit()
+
+    return jsonify({"success": True})
