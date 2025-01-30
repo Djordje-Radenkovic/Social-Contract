@@ -9,6 +9,8 @@
 </div>
 <div class="main-content">
     <p>Welcome, {{ user.username }}!</p>
+    <p>Your balance is {{ balance }}</p>
+    <p>Your Solana Public address is {{ sol_address }}</p>
     <form method="POST" action="{{ url_for('main.update_profile') }}">
         <label for="username">Username:</label>
         <input type="text" name="username" value="{{ user.username }}" required>

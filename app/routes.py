@@ -13,6 +13,13 @@ import pytz
 from flask_socketio import emit, join_room
 import os
 from .helpers import get_next_sunday, task_details, contract_details, get_intervalsTot, format_message_date, format_due_date
+from solders.keypair import Keypair
+from solders.pubkey import Pubkey
+import base64
+import time
+from solana.rpc.api import Client
+from openai import OpenAI
+
 
 main = Blueprint('main', __name__)
 
@@ -30,6 +37,14 @@ s3 = boto3.client(
     aws_secret_access_key = aws_secret_key
 )
 bucket = 'socialcontract1'
+
+# set up solana client
+solana_client = Client("https://api.devnet.rpcpool.com")
+
+
+# initialise the client
+client = OpenAI()
+
 
 ################ NAVIGATION ###############
 
@@ -99,7 +114,6 @@ def contracts():
             }
             for contract in member_contracts + invited_contracts
     ]
-
     return render_template('contracts.html', user=current_user, stories=stories, contracts=contracts)
 
 @main.route('/signup', methods=['GET', 'POST'])
@@ -108,7 +122,17 @@ def signup():
         username = request.form['username']
         password = request.form['password']
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        new_user = User(username=username, password=hashed_password)
+
+        # generate new Solana wallet
+        keypair = Keypair()
+        public_key = str(keypair.pubkey())
+        private_key = base64.b64encode(bytes(keypair)).decode('utf-8')
+
+        new_user = User(username=username, 
+                        password=hashed_password, 
+                        solana_public_key=public_key, 
+                        solana_private_key=private_key)
+        
         db.session.add(new_user)
         db.session.commit()
         flash('Account created successfully!', 'success')
@@ -139,7 +163,10 @@ def logout():
 @main.route('/profile')
 @login_required
 def profile():
-    return render_template('profile.html', user=current_user)
+    cur_user = User.query.filter_by(username=current_user.username).first()
+    balance = cur_user.balance
+    address = cur_user.solana_public_key
+    return render_template('profile.html', user=current_user, balance = balance, sol_address=address)
 
 @main.route('/profile', methods=['POST'])
 @login_required
@@ -524,6 +551,36 @@ def upload_image():
     if sender not in contract.members:
         return jsonify({"error": "Sender is not a member of this contract"}), 403
     
+    if int(contract_id) == 1 and int(task_id) == 1:
+        print('CIAO')
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Does this image show total daily use time below 2h? Only answer Yes or No."},
+                        {"type": "image_url", "image_url": {"url": media_url}},
+                    ],
+                }
+            ],
+            max_tokens=10,
+        )
+
+        gpt_answer = response.choices[0].message.content.strip().lower()
+        print(gpt_answer)
+
+        if "no" in gpt_answer:
+            return jsonify({"error": "Usage time is above 2h. Try again."}), 400
+
+    # send the user a reward
+    # sender.solana_p
+    # sender.solana_public_key
+    # receiver_pubkey = Pubkey.from_string(sender.solana_public_key)
+    # airdrop_amount = 10_000_000 
+    # response = solana_client.request_airdrop(receiver_pubkey, airdrop_amount)
+    sender.balance += 1
+
     # Validate task_id if provided
     task = None
     if task_id:
@@ -564,6 +621,7 @@ def upload_image():
         "task_id": task_id,
         "task_name": task.name if task else None
     }, room=f"contract_{contract_id}")
+
 
     ################################
 

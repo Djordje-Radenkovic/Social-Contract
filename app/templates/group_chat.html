@@ -137,32 +137,52 @@ document.getElementById('send-button').addEventListener('click', () => {
         const tempImgId = `temp-${Date.now()}`; // Unique ID for the temporary image
 
         reader.onload = function (e) {
-
             const li = document.createElement('li');
-            li.id = `temp-li-${tempImgId}`; // Temporary <li> ID for cleanup later
+            li.id = `temp-li-${tempImgId}`;
             li.classList.add('completion-message');
             li.style.display = 'flex';
-            li.style.flexDirection = 'column';
-            li.style.marginBottom = '10px';
+            li.style.flexDirection = 'column'; // Ensures text is above image + spinner
+            li.style.alignItems = 'flex-start'; // Align left
 
-            // Add the sender's name
-            const senderName = document.createElement('span');
-            senderName.textContent = `${username} completed task: ${window.selectedTaskName} !`; // Include the task name in the placeholder text
+            // ✅ Text Above (Task Completion)
+            const taskText = document.createElement('p');
+            taskText.textContent = `${username} completed task: ${window.selectedTaskName}!`;
+            taskText.classList.add('task-text'); // Style with CSS
+            li.appendChild(taskText);
 
-            li.appendChild(senderName);
+            // ✅ Row Container for Image + Spinner
+            const rowContainer = document.createElement('div');
+            rowContainer.style.display = 'flex';
+            rowContainer.style.alignItems = 'center'; // Ensures spinner aligns with image
+            rowContainer.style.gap = '10px'; // Adds space between image and spinner
 
-            // Add the placeholder image
+            // ✅ Placeholder Image (Left Side)
             const imgElement = document.createElement('img');
-            imgElement.src = e.target.result; // Temporary image preview
+            imgElement.src = e.target.result;
             imgElement.alt = "Uploading...";
-            imgElement.id = tempImgId; // Assign a temporary ID
+            imgElement.id = tempImgId;
             imgElement.style.maxWidth = "200px";
             imgElement.style.maxHeight = "200px";
-            li.appendChild(imgElement);
 
+            // ✅ AI Analyzing Spinner (Right Side)
+            const aiLoader = document.createElement('div');
+            aiLoader.id = `loader-${tempImgId}`;
+            aiLoader.classList.add('spinner-container');
+            aiLoader.innerHTML = `
+                <div class="spinner"></div>
+                <p class="ai-text">AI analyzing...</p>
+            `;
+
+            // ✅ Append Image and Spinner in the Row Container
+            rowContainer.appendChild(imgElement);
+            rowContainer.appendChild(aiLoader);
+
+            // ✅ Append Everything to the List Item
+            li.appendChild(rowContainer);
             messagesList.appendChild(li);
-            messagesList.scrollTop = messagesList.scrollHeight; // Scroll to the bottom
+            messagesList.scrollTop = messagesList.scrollHeight;
         };
+
         
 
         reader.readAsDataURL(imageFile); // Load the image as a preview
