@@ -627,6 +627,8 @@ def upload_image():
 
     return jsonify({"media_url": media_url}), 201
 
+
+
 ############## CONTRACT STORIES ################
 
 @main.route('/contract/<int:contract_id>/stories')

@@ -27,6 +27,47 @@ body {
     padding: 10px;
 }
 
+
+
+@media (min-width: 600px) { /* Targets laptops and larger screens */
+    html, body {
+        width: 360px; /* Force mobile width */
+        height: 700px; /* Force mobile height */
+        margin: auto; /* Centers the app */
+        position: absolute;
+        /* margin-bottom:10px; */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        /* background: radial-gradient(circle, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0.3) 70%); */
+        background: white;
+        box-shadow: 0px 0px 20px rgba(12, 8, 8, 0.3) !important;
+        border-radius: 25px !important;
+        overflow: hidden;
+    }
+    .bottom-nav {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+    }
+    .bottom-nav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        left: 50%;
+        right: 50%;
+        transform: translateX(-50%); /* Centers it horizontally */
+    }
+
+   
+}
+
+
+
 /* Bottom Navigation */
 .bottom-nav {
     display: flex;
@@ -40,6 +81,17 @@ body {
     padding: 10px 0;
     z-index: 1000;
     padding-bottom:20px;
+}
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    left: 50%;
+    right: 50%;
+    transform: translateX(-50%); /* Centers it horizontally */
 }
 
 .nav-item {

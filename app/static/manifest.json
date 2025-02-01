@@ -3,8 +3,8 @@
     "short_name": "Social Contract",
     "start_url": "/?standalone=true",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#4A90E2",
+    "background_color": "#0FA2FF",
+    "theme_color": "#0FA2FF",
     "icons": [
       {
         "src": "/static/icons/icon-192x192.png",

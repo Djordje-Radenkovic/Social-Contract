@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Profile{% endblock %}
-{% block styles %}
+{% block extra_head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
 {% endblock %}
 {% block content %}
@@ -27,10 +27,10 @@
         <i class="fa-solid fa-file-contract"></i>
         <span>Contracts</span>
     </a>
-    <a href="/progress" class="nav-item">
+    <!-- <a href="/progress" class="nav-item">
         <i class="fa-solid fa-trophy"></i>
         <span>Progress</span>
-    </a>
+    </a> -->
     <a href="/profile" class="nav-item active">
         <i class="fa-solid fa-gear"></i>
         <span>Profile</span>
