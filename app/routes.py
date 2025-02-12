@@ -114,7 +114,14 @@ def contracts():
             }
             for contract in member_contracts + invited_contracts
     ]
-    return render_template('contracts.html', user=current_user, stories=stories, contracts=contracts)
+
+    user_agent = request.user_agent.string.lower()
+    print(user_agent)
+    
+    if True:#"mobile" in user_agent:
+        return render_template('contracts.html', user=current_user, stories=stories, contracts=contracts)
+    else:
+        return render_template('desktop.html')
 
 @main.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -151,7 +158,13 @@ def login():
             return redirect(url_for('main.contracts'))
         else:
             flash('Invalid credentials, please try again.', 'danger')
-    return render_template('login.html')
+    user_agent = request.user_agent.string.lower()
+    print(user_agent)
+    
+    if True:#"mobile" in user_agent:
+        return render_template('login.html')
+    else:
+        return render_template('desktop.html')
 
 @main.route('/logout')
 @login_required

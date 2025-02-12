@@ -96,3 +96,31 @@
         background-color: #4dcfa1;
     }
     
+
+
+    .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.5);
+        border: none;
+        color: white;
+        font-size: 24px;
+        padding: 10px 15px;
+        cursor: pointer;
+        border-radius: 50%;
+    }
+    
+    .left {
+        left: 10px;
+    }
+    
+    .right {
+        right: 10px;
+    }
+    
+    .nav-btn:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+    

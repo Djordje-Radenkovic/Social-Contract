@@ -394,49 +394,86 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-////////////////////////////////////
-function handleTaskClick(taskId, taskName, contractId, userId) {
-    // Log the received parameters for debugging
-    console.log("Received taskId:", taskId);
-    console.log("Received taskName:", taskName);
-    console.log("Received contractId:", contractId);
-    console.log("Received userId:", userId);
+// ////////////////////////////////////
+// function handleTaskClick(taskId, taskName, contractId, userId) {
+//     // Log the received parameters for debugging
+//     console.log("Received taskId:", taskId);
+//     console.log("Received taskName:", taskName);
+//     console.log("Received contractId:", contractId);
+//     console.log("Received userId:", userId);
 
-    const fileInput = document.getElementById('fileInput');
-    fileInput.click(); // Trigger the file picker
+//     const fileInput = document.getElementById('fileInput');
+//     fileInput.click(); // Trigger the file picker
 
-    fileInput.onchange = function (event) {
-        const file = event.target.files[0];
-        if (!file) return; // Exit if no file is selected
+//     fileInput.onchange = function (event) {
+//         const file = event.target.files[0];
+//         if (!file) return; // Exit if no file is selected
 
-        // Prepare the form data
-        const formData = new FormData();
-        formData.append('image', file); // Append the image file
-        formData.append('contract_id', contractId); // Add the contract ID
-        formData.append('sender_id', userId); // Add the sender ID
-        formData.append('task_id', taskId); // Add the task ID
-        window.location.href = `/contract/${contractId}`;
+//         // Prepare the form data
+//         const formData = new FormData();
+//         formData.append('image', file); // Append the image file
+//         formData.append('contract_id', contractId); // Add the contract ID
+//         formData.append('sender_id', userId); // Add the sender ID
+//         formData.append('task_id', taskId); // Add the task ID
+//         window.location.href = `/contract/${contractId}`;
 
         
-        // Make the POST request to upload the image
-        fetch('/upload_image', {
-            method: 'POST',
-            body: formData,
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    console.error("Error uploading image:", data.error);
-                    alert("Error uploading image.");
-                } else {
-                    console.log("Image uploaded successfully:", data.media_url);
-                    alert(`Task "${taskName}" has been completed!`);
+//         // Make the POST request to upload the image
+//         fetch('/upload_image', {
+//             method: 'POST',
+//             body: formData,
+//         })
+//             .then(response => response.json())
+//             .then(data => {
+//                 if (data.error) {
+//                     console.error("Error uploading image:", data.error);
+//                     alert("Error uploading image.");
+//                 } else {
+//                     console.log("Image uploaded successfully:", data.media_url);
+//                     alert(`Task "${taskName}" has been completed!`);
 
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
+//                 }
+//             })
+//             .catch(error => {
+//                 console.error("Error:", error);
+//             });
+//     };
+// }
+function handleTaskClick(taskId, taskName, contractId, userId) {
+    const fileInput = document.getElementById('fileInput');
+    fileInput.click();
+
+    fileInput.onchange = async function (event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('contract_id', contractId);
+        formData.append('sender_id', userId);
+        formData.append('task_id', taskId);
+
+        try {
+            // Wait for upload to complete
+            const response = await fetch('/upload_image', {
+                method: 'POST',
+                body: formData,
             });
+            
+            const data = await response.json();
+            
+            if (data.error) {
+                console.error("Error uploading image:", data.error);
+                alert("Error uploading image.");
+            } else {
+                console.log("Image uploaded successfully:", data.media_url);
+                // Only redirect AFTER successful upload
+                window.location.href = `/contract/${contractId}`;
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Failed to upload image. Please try again.");
+        }
     };
 }
 

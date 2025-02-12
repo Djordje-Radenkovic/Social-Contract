@@ -202,7 +202,47 @@
     font-size: 14px;
 }
 
+/* ####################### */
 
+.task-content {
+    display: flex;
+    justify-content: space-between; /* Ensures left and right elements stay separate */
+    align-items: center;
+    width: 100%;
+    overflow: hidden; /* Prevents overflow */
+}
+
+.task-left {
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* Allows task name to expand */
+    min-width: 0; /* Important for ellipsis */
+}
+
+/* ✏️ Task Name with Ellipsis */
+.task-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    flex: 1; /* Allows the text to shrink */
+    min-width: 0; /* REQUIRED for ellipsis in flexbox */
+    display: block; /* Ensures it behaves properly inside flex */
+    max-width: 100%; /* Ensures it doesn't expand too much */
+}
+
+/* ⏳ Deadline Stays Fixed */
+.task-right {
+    flex-shrink: 0; /* Prevents deadline from being squashed */
+    font-weight: 200;
+    font-size: 14px;
+    padding-left: 10px;
+}
+
+.task-left i, .task-left span {
+    flex-shrink: 0; /* Prevents checkbox from shrinking */
+}
+
+/* ####################### */
 
 /* Create Contract Modal */
 

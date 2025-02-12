@@ -24,7 +24,8 @@
             {% endfor %}
         </select>
         <textarea id="message-text" placeholder="Type your message..."></textarea>
-        <input id="message-image" type="file" accept="image/*" style="display: none;">
+        <input id="message-image" type="file" accept="image/*" style="display: none;" class="mobile-friendly-input">
+        <!-- <input id="message-image" type="file" accept="image/*" style="display: none;"> -->
         <!-- <button id="attach-button" onclick="document.getElementById('message-image').click()">📎</button> -->
         <button id="attach-button">📎</button>
         <button class="send-button" id="send-button">Send</button>
@@ -66,13 +67,19 @@
         const selectedTask = taskSelector.value;
         const selectedTaskName = taskSelector.selectedOptions[0]?.getAttribute('data-task-name');
 
+        console.log("Selected task:", selectedTask); // Debugging
+
         if (selectedTask) {
             // Save the selected task globally
             window.selectedTaskId = selectedTask;
             window.selectedTaskName = selectedTaskName;
 
+            // Instead of programmatically clicking, show the file input
+            const fileInput = document.getElementById('message-image');
+            fileInput.style.display = 'block';  // M
+
             // Trigger the file input for image selection
-            document.getElementById('message-image').click();
+            //document.getElementById('message-image').click();
 
             // Reset the task selector to its default state
             taskSelector.selectedIndex = 0; // Reset to the default "Select a task" option

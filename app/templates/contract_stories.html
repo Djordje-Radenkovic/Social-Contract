@@ -12,6 +12,14 @@
         <span id="story-username"></span>
         <button class="close-btn" onclick="goBack()"><i class="fa-solid fa-xmark" style="color: white;"></i></button>
     </div>
+    <!-- Navigation Buttons -->
+    <button id="prev-story-btn" class="nav-btn left" onclick="prevStory()">
+        <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <button id="next-story-btn" class="nav-btn right" onclick="nextStory()">
+        <i class="fa-solid fa-chevron-right"></i>
+    </button>
+
 
     {% if stories|length == 0 %}
         <div class="no-stories-message">
@@ -77,6 +85,10 @@
             document.getElementById('story-task').innerText = story.task_name || 'No Task'; // Add task name
             restartProgress();
             currentStoryIndex = index;
+
+            // Enable/disable buttons based on story position
+            document.getElementById('prev-story-btn').disabled = (currentStoryIndex === 0);
+            document.getElementById('next-story-btn').disabled = (currentStoryIndex === stories.length - 1);
         }
     }
  
