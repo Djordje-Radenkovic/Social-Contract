@@ -19,6 +19,7 @@ import base64
 import time
 from solana.rpc.api import Client
 from openai import OpenAI
+import uuid
 
 
 main = Blueprint('main', __name__)
@@ -431,7 +432,7 @@ def send_message():
 @main.route('/get_messages/<int:contract_id>', methods=['GET'])
 def get_messages(contract_id):
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 20, type=int)
+    per_page = request.args.get('per_page', 100, type=int)
 
     contract = Contract.query.get(contract_id)
     if not contract:
@@ -543,16 +544,23 @@ def upload_image():
     if not image:
         return jsonify({"error": "No image provided"}), 400
 
-    filename = secure_filename(image.filename)
-    address = f'message_images/{filename}'
-    s3.upload_fileobj(image, bucket, address)
-    media_url = f"https://{bucket}.s3.amazonaws.com/{address}"
-
+    # Generate unique filename
+    timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")  # Example: 2025-02-12_23-59-59
+    unique_id = uuid.uuid4().hex[:8]  # Short unique identifier
+    file_extension = image.filename.rsplit('.', 1)[-1].lower()  # Extract file extension
 
     ###########################
     contract_id = request.form.get('contract_id')  # Pass contract_id from frontend
     sender_id = request.form.get('sender_id')  # Pass sender_id from frontend
     task_id = request.form.get('task_id')
+
+    #filename = secure_filename(image.filename)
+    filename = f"{current_user.username}_{contract_id}_{timestamp}_{unique_id}.{file_extension}"
+    address = f'message_images/{filename}'
+    s3.upload_fileobj(image, bucket, address)
+    media_url = f"https://{bucket}.s3.amazonaws.com/{address}"
+
+
 
 
     # Save the message with the media URL in the database

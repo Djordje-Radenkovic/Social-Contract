@@ -1,5 +1,6 @@
 function loadMessages() {
-    fetch(`/get_messages/${contractId}`)
+    // fetch(`/get_messages/${contractId}`)
+    fetch(`/get_messages/${contractId}?t=${new Date().getTime()}`)
         .then(response => {
             if (!response.ok) throw new Error("Failed to load messages");
             return response.json();
@@ -21,10 +22,14 @@ function loadMessages() {
                     img.alt = "Image";
                     img.style.maxWidth = "200px"; // Adjust as needed
                     img.style.maxHeight = "200px";
-                    const textNode = document.createTextNode(`${msg.sender_name} completed task: ${msg.task_name} !`);
+                    const textNode = document.createTextNode(
+                        msg.task_name ? `${msg.sender_name} completed task: ${msg.task_name}!` : `${msg.sender_name} sent an image`
+                    );
+                    // const textNode = document.createTextNode(`${msg.sender_name} completed task: ${msg.task_name} !`);
                     li.appendChild(textNode);
                     li.appendChild(img);
                 } 
+
 
                 // Check if the message has content
                 if (msg.content) {
