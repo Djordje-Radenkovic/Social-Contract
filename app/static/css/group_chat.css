@@ -1,155 +1,88 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f2f5;
-    margin: 0;
-    padding: 0;
+    margin:0;
+    height: 100vh;
+    overflow: hidden;
+    position:fixed;
 }
+#top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+#chat-container {
+    height: 100vh;
+    width: 100vw;
+  
+    padding: 40px 0 80px;  /* Space for top-bar and message-input */
+}
+#chat-window {
+    /* height: 100%; */
+    overflow-y: auto;
+    padding-bottom:80px;
+    height: calc(100% - 130px); /* Adjust height to leave space for input */
+}
+#message-input {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    background: white;
+    box-shadow: 0 -1px 3px rgba(0,0,0,0.1);
+}
+
 
 #messages {
     list-style-type: none;
     padding: 0;
     margin: 0;
 }
-
 #messages li {
     display: flex;
     align-items: flex-start;
     margin-bottom: 10px;
 }
 
-#message-input {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-    background-color: white;
-    border-top: 1px solid #ddd;
-}
-
-#message-text {
-    flex: 1;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    padding: 10px;
-    resize: none;
-    font-size: 14px;
-    outline: none;
-    height: 40px;
-}
-
-#attach-button,
-.send-button {
-    background-color: #0084ff;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    font-size: 18px;
-}
-
-
-
-.spinner-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 12px;
-    color: #555;
-}
-
-.spinner {
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(0, 0, 0, 0.3);
-    border-top: 3px solid black;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 5px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.nav-item {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    background-color: white;
-    padding: 8px 12px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-}
-
-
-
-
-
+/* ///////////////////////////// */
 #top-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 50px;
-    background-color: white;
-    padding: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    overflow-y: hidden;
-}
-
-#message-input {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 60px;
-    background-color: white;
-    border-top: 1px solid #ddd;
-    padding: 10px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    z-index: 1000;
-}
-
-#chat-container {
+    justify-content: center;
+    font-weight: bold;
     position: fixed;
-    top: 60px; /* Below #top-bar */
-    left: 50%;
-    transform: translateX(-50%);
     width: 100%;
-    max-width: 600px; /* Centered with max width */
-    bottom: 60px; /* Above #message-input */
+}
+#back-arrow {
+    position: absolute;
+    left: 1rem;
+    text-decoration: none;
+    color: black;
+}
+#messages li {
     display: flex;
-    flex-direction: column;
-    background: white;
+    max-width: 75%;
+    padding: 8px 12px;
+    margin: 5px;
+    border-radius: 15px;
+    word-wrap: break-word;
+}
+#messages li.sent {
+    align-self: flex-end;
+    background: #007bff;
+    color: white;
+    margin-left: auto;
+}
+#messages li.received {
+    align-self: flex-start;
+    background: #f1f1f1;
+    color: black;
+}
+#messages li img {
+    max-width: 200px;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-#chat-window {
-    flex: 1;
-    overflow-y: auto; /* Only this section should scroll */
-    padding: 10px;
-    background-color: #e9eff6;
-}
-
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: white;
-    border-top: 1px solid #ddd;
-    padding: 10px 0;
-    z-index: 1000;
-    padding-bottom: env(safe-area-inset-bottom); /* Fixes iPhone bottom gap */
 }

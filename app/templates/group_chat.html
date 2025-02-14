@@ -17,31 +17,22 @@
         </ul>
     </div>    
     <!-- Strip for Task Selector & File Input -->
-    <div id="attachment-strip" style="display: none;">
-        <select id="task-selector">
-            <option value="" disabled selected>Select a task</option>
-            {% for task in tasks %}
-                <option value="{{ task.id }}" data-task-name="{{ task.name }}" data-deadline="{{ task.deadline }}">
-                    {{ task.name }}
-                </option>
-            {% endfor %}
-        </select>
-        <input id="message-image" type="file" accept="image/*" style="display: none;" class="mobile-friendly-input">
-    </div>
+    
 
    
     <div id="message-input">
-        <!-- <select id="task-selector" style="display: none;">
-            <option value="" disabled selected>Select a task</option>
-            {% for task in tasks %}
-                <option value="{{ task.id }}" data-task-name="{{ task.name }}" data-deadline="{{ task.deadline }}">
-                    {{ task.name }}
-                </option>
-            {% endfor %}
-        </select> -->
-        <textarea id="message-text" placeholder="Type your message..."></textarea>
-        <!-- <input id="message-image" type="file" accept="image/*" style="display: none;" class="mobile-friendly-input"> -->
-    
+        <div id="attachment-strip">
+            <select id="task-selector">
+                <option value="" disabled selected>Select a task</option>
+                {% for task in tasks %}
+                    <option value="{{ task.id }}" data-task-name="{{ task.name }}" data-deadline="{{ task.deadline }}">
+                        {{ task.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <input id="message-image" type="file" accept="image/*" style="display: none;" class="mobile-friendly-input">
+        </div>
+        <textarea id="message-text" placeholder="Type your message..."></textarea>    
         <button id="attach-button">📎</button>
         <button class="send-button" id="send-button">Send</button>
     </div>
@@ -172,7 +163,7 @@ document.getElementById('send-button').addEventListener('click', () => {
 
             // ✅ Text Above (Task Completion)
             const taskText = document.createElement('p');
-            taskText.textContent = `${username} completed submitted task: ${window.selectedTaskName}!`;
+            taskText.textContent = `${username} submitted task: ${window.selectedTaskName}!`;
         
             li.appendChild(taskText);
 
@@ -206,8 +197,9 @@ document.getElementById('send-button').addEventListener('click', () => {
             // ✅ Append Everything to the List Item
             li.appendChild(rowContainer);
             messagesList.appendChild(li);
-            // messagesList.scrollTop = messagesList.scrollHeight;
-            // document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
+            
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.scrollTop = chatWindow.scrollHeight;
 
         };
 
@@ -257,6 +249,8 @@ document.getElementById('send-button').addEventListener('click', () => {
 });
 
 //////////////////////////
+document.getElementById('send-button').addEventListener('click', refocusChat);
+document.getElementById('message-text').addEventListener('blur', refocusChat);
 
 
 

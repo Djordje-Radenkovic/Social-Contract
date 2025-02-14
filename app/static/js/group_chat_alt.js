@@ -13,7 +13,6 @@ function loadMessages() {
                 li.style.display = 'flex';
                 li.style.flexDirection = 'column';
                 li.style.marginBottom = '10px';
-
                 //check if message has image
                 if (msg.media_url) {
                     li.classList.add('completion-message');
@@ -22,36 +21,19 @@ function loadMessages() {
                     img.alt = "Image";
                     img.style.maxWidth = "200px"; // Adjust as needed
                     img.style.maxHeight = "200px";
-
-                    // Add load event listener to each image
-                    img.onload = () => {
-                        // messagesList.scrollTop = messagesList.scrollHeight;
-                        // document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
-                    };
-
-                    let messageText;
-                    if (msg.ai_verified === false) {
-                        messageText = `${msg.sender_name} ❌ failed AI verification for task: ${msg.task_name}`;
-                    } else {
-                        messageText = `${msg.sender_name} ✅ completed task: ${msg.task_name}!`;
-                    }
-                    const textNode = document.createTextNode(messageText);
-
-                    // const textNode = document.createTextNode(
-                    //     msg.task_name ? `${msg.sender_name} completed task: ${msg.task_name}!` : `${msg.sender_name} sent an image`
-                    // );
+                    const textNode = document.createTextNode(
+                        msg.task_name ? `${msg.sender_name} completed task: ${msg.task_name}!` : `${msg.sender_name} sent an image`
+                    );
                     // const textNode = document.createTextNode(`${msg.sender_name} completed task: ${msg.task_name} !`);
                     li.appendChild(textNode);
                     li.appendChild(img);
                 } 
-
 
                 // Check if the message has content
                 if (msg.content) {
                     const textNode = document.createTextNode(`${msg.sender_name}: ${msg.content}`);
                     li.appendChild(textNode);
                 }
-
                 
                 messagesList.appendChild(li);
             });
@@ -66,25 +48,19 @@ function loadMessages() {
         });
 }
 
-
 loadMessages(); // Fetch existing messages on page load
-
 
 // WebSocket connection
 const socket = io();
-
 // Join the contract room
 socket.emit('join', { contract_id: contractId });
-
 socket.on('new_message', (msg) => {
     const messagesList = document.getElementById('messages');
-
     // Create a new <li> for the received message
     const li = document.createElement('li');
     li.style.display = 'flex';
     li.style.flexDirection = 'column';
     li.style.marginBottom = '10px';
-
     // Add the text if content is present
     if (msg.content) {
         const textNode = document.createTextNode(`${msg.sender_name}: ${msg.content}`);
@@ -99,26 +75,22 @@ socket.on('new_message', (msg) => {
         img.style.maxWidth = "200px";
         img.style.maxHeight = "200px";
         img.loading = "lazy";
-
-        let messageText;
-        const textNode = document.createTextNode(`${msg.sender_name} ✅ completed task: ${msg.task_name} !`);
+        const textNode = document.createTextNode(`${msg.sender_name} completed task: ${msg.task_name} !`);
         li.appendChild(textNode);
         li.appendChild(img);
     }
-
     messagesList.appendChild(li);
-    
+   
     const chatWindow = document.getElementById('chat-window');
     chatWindow.scrollTop = chatWindow.scrollHeight;
-
+    
+    // messagesList.scrollTop = messagesList.scrollHeight; // Auto-scroll to the latest message
 });
-
 
 // Handle WebSocket connection errors
 socket.on('connect_error', () => {
     console.error("WebSocket connection failed!");
 });
-
 document.getElementById('accept-button')?.addEventListener('click', () => {
     fetch(`/contract/${contractId}/accept`, { method: 'POST' })
         .then(response => {
@@ -129,7 +101,6 @@ document.getElementById('accept-button')?.addEventListener('click', () => {
             }
         });
 });
-
 document.getElementById('decline-button')?.addEventListener('click', () => {
     fetch(`/contract/${contractId}/decline`, { method: 'POST' })
         .then(response => {
@@ -140,12 +111,9 @@ document.getElementById('decline-button')?.addEventListener('click', () => {
             }
         });
 });
-
 fetch(`/mark_message_seen/${contractId}`, { method: 'POST' })
     .then(response => response.json())
     .then(data => {
         console.log(data.message);  // Debugging feedback
     })
     .catch(error => console.error('Error marking message as seen:', error));
-
-
