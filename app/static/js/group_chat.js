@@ -100,14 +100,7 @@ socket.on('new_message', (msg) => {
         img.loading = "lazy";
 
         let messageText;
-        if (msg.ai_verified === false) {
-            messageText = `${msg.sender_name} ❌ failed AI verification for task: ${msg.task_name}`;
-        } else {
-            messageText = `${msg.sender_name} ✅ completed task: ${msg.task_name}!`;
-        }
-        const textNode = document.createTextNode(messageText);
-
-        // const textNode = document.createTextNode(`${msg.sender_name} completed task: ${msg.task_name} !`);
+        const textNode = document.createTextNode(`${msg.sender_name} attempted task: ${msg.task_name} !`);
         li.appendChild(textNode);
         li.appendChild(img);
     }
