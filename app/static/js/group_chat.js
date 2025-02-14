@@ -22,9 +22,25 @@ function loadMessages() {
                     img.alt = "Image";
                     img.style.maxWidth = "200px"; // Adjust as needed
                     img.style.maxHeight = "200px";
-                    const textNode = document.createTextNode(
-                        msg.task_name ? `${msg.sender_name} completed task: ${msg.task_name}!` : `${msg.sender_name} sent an image`
-                    );
+
+                    // Add load event listener to each image
+                    img.onload = () => {
+                        // messagesList.scrollTop = messagesList.scrollHeight;
+                        // document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
+
+                    };
+
+                    let messageText;
+                    if (msg.ai_verified === false) {
+                        messageText = `${msg.sender_name} ❌ failed AI verification for task: ${msg.task_name}`;
+                    } else {
+                        messageText = `${msg.sender_name} ✅ completed task: ${msg.task_name}!`;
+                    }
+                    const textNode = document.createTextNode(messageText);
+
+                    // const textNode = document.createTextNode(
+                    //     msg.task_name ? `${msg.sender_name} completed task: ${msg.task_name}!` : `${msg.sender_name} sent an image`
+                    // );
                     // const textNode = document.createTextNode(`${msg.sender_name} completed task: ${msg.task_name} !`);
                     li.appendChild(textNode);
                     li.appendChild(img);
@@ -40,7 +56,9 @@ function loadMessages() {
                 
                 messagesList.appendChild(li);
             });
-            messagesList.scrollTop = messagesList.scrollHeight;
+            // messagesList.scrollTop = messagesList.scrollHeight;
+            // document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
+
         })
         .catch(error => {
             console.error("Error fetching messages:", error);
@@ -80,13 +98,23 @@ socket.on('new_message', (msg) => {
         img.style.maxWidth = "200px";
         img.style.maxHeight = "200px";
         img.loading = "lazy";
-        const textNode = document.createTextNode(`${msg.sender_name} completed task: ${msg.task_name} !`);
+
+        let messageText;
+        if (msg.ai_verified === false) {
+            messageText = `${msg.sender_name} ❌ failed AI verification for task: ${msg.task_name}`;
+        } else {
+            messageText = `${msg.sender_name} ✅ completed task: ${msg.task_name}!`;
+        }
+        const textNode = document.createTextNode(messageText);
+
+        // const textNode = document.createTextNode(`${msg.sender_name} completed task: ${msg.task_name} !`);
         li.appendChild(textNode);
         li.appendChild(img);
     }
 
     messagesList.appendChild(li);
-    messagesList.scrollTop = messagesList.scrollHeight; // Auto-scroll to the latest message
+    // messagesList.scrollTop = messagesList.scrollHeight;
+    // document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
 });
 
 

@@ -84,6 +84,7 @@ class Message(db.Model):
     media_url = db.Column(db.String(2083), nullable=True)  # URL for any media (e.g., images) sent with the message
     read_by = db.Column(db.JSON, default=list, nullable=False)  # List of usernames who have read the message
     task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=True)  # Foreign key for the related task
+    ai_verified = db.Column(db.Boolean, nullable=True) 
 
     # Relationships
     sender = db.relationship('User', backref='messages')  # Access the sender as an object

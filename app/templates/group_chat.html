@@ -1,32 +1,47 @@
 {% extends "base.html" %}
 {% block extra_head %}
+    <!-- <meta name='viewport' content='initial-scale=1, viewport-fit=cover'> -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/group_chat.css') }}">
 {% endblock %}
 
 {% block content %}
-<a href="/" class="nav-item">Go back</a>
+<div id="top-bar">
+    <a href="/" id="back-arrow">←</a>
+    <span id="chat-title">{{ contract.name }}</span>
+</div>
+
 <div id="chat-container">
     <div id="chat-window">
         <ul id="messages">
             <!-- Messages will be dynamically loaded here -->
         </ul>
     </div>    
-   
-    <div id="message-input">
-        <select id="task-selector" style="display: none;">
+    <!-- Strip for Task Selector & File Input -->
+    <div id="attachment-strip" style="display: none;">
+        <select id="task-selector">
             <option value="" disabled selected>Select a task</option>
-            <!-- Dynamically populate this list -->
             {% for task in tasks %}
                 <option value="{{ task.id }}" data-task-name="{{ task.name }}" data-deadline="{{ task.deadline }}">
                     {{ task.name }}
                 </option>
-            <!-- <option value="{{ task.id }}">{{ task.name }}</option> -->
             {% endfor %}
         </select>
-        <textarea id="message-text" placeholder="Type your message..."></textarea>
         <input id="message-image" type="file" accept="image/*" style="display: none;" class="mobile-friendly-input">
-        <!-- <input id="message-image" type="file" accept="image/*" style="display: none;"> -->
-        <!-- <button id="attach-button" onclick="document.getElementById('message-image').click()">📎</button> -->
+    </div>
+
+   
+    <div id="message-input">
+        <!-- <select id="task-selector" style="display: none;">
+            <option value="" disabled selected>Select a task</option>
+            {% for task in tasks %}
+                <option value="{{ task.id }}" data-task-name="{{ task.name }}" data-deadline="{{ task.deadline }}">
+                    {{ task.name }}
+                </option>
+            {% endfor %}
+        </select> -->
+        <textarea id="message-text" placeholder="Type your message..."></textarea>
+        <!-- <input id="message-image" type="file" accept="image/*" style="display: none;" class="mobile-friendly-input"> -->
+    
         <button id="attach-button">📎</button>
         <button class="send-button" id="send-button">Send</button>
     </div>
@@ -57,8 +72,13 @@
 <script>
 
     document.getElementById('attach-button').addEventListener('click', () => {
+        const attachmentStrip = document.getElementById('attachment-strip');
+        const fileInput = document.getElementById('message-image');
         const taskSelector = document.getElementById('task-selector');
+
         taskSelector.style.display = 'block'; // Show the dropdown
+        attachmentStrip.style.display = 'block';
+        fileInput.style.display = 'none'
         taskSelector.focus(); // Focus on it
     });
 
@@ -66,8 +86,6 @@
         const taskSelector = document.getElementById('task-selector');
         const selectedTask = taskSelector.value;
         const selectedTaskName = taskSelector.selectedOptions[0]?.getAttribute('data-task-name');
-
-        console.log("Selected task:", selectedTask); // Debugging
 
         if (selectedTask) {
             // Save the selected task globally
@@ -115,6 +133,7 @@ function removeAttachment() {
     if (preview) {
         preview.remove();
         document.getElementById('message-image').value = ''; // Clear file input
+        document.getElementById('attachment-strip').style.display = 'none';
     }
 }
 
@@ -153,8 +172,8 @@ document.getElementById('send-button').addEventListener('click', () => {
 
             // ✅ Text Above (Task Completion)
             const taskText = document.createElement('p');
-            taskText.textContent = `${username} completed task: ${window.selectedTaskName}!`;
-            taskText.classList.add('task-text'); // Style with CSS
+            taskText.textContent = `${username} completed submitted task: ${window.selectedTaskName}!`;
+        
             li.appendChild(taskText);
 
             // ✅ Row Container for Image + Spinner
@@ -187,7 +206,9 @@ document.getElementById('send-button').addEventListener('click', () => {
             // ✅ Append Everything to the List Item
             li.appendChild(rowContainer);
             messagesList.appendChild(li);
-            messagesList.scrollTop = messagesList.scrollHeight;
+            // messagesList.scrollTop = messagesList.scrollHeight;
+            // document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
+
         };
 
         
@@ -204,7 +225,8 @@ document.getElementById('send-button').addEventListener('click', () => {
         fetch('/upload_image', {
             method: 'POST',
             body: formData,
-        })
+        }
+        )
             .then(response => response.json())
             .then(data => {
                 if (data.error) {

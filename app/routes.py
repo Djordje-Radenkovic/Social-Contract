@@ -448,6 +448,7 @@ def get_messages(contract_id):
             "sender_name": message.sender.username,
             "created_at": message.created_at.isoformat(),
             "media_url": message.media_url,
+            "ai_verified": message.ai_verified,
             "task_name": Task.query.get(message.task_id).name if Task.query.get(message.task_id) else None
         }
         for message in messages.items
@@ -572,6 +573,7 @@ def upload_image():
     if sender not in contract.members:
         return jsonify({"error": "Sender is not a member of this contract"}), 403
     
+    ai_verified = True
     if int(contract_id) == 1 and int(task_id) == 1:
         print('CIAO')
         response = client.chat.completions.create(
@@ -592,7 +594,8 @@ def upload_image():
         print(gpt_answer)
 
         if "no" in gpt_answer:
-            return jsonify({"error": "Usage time is above 2h. Try again."}), 400
+            ai_verified = False
+            # return jsonify({"error": "Usage time is above 2h. Try again."}), 400
 
     # send the user a reward
     # sender.solana_p
@@ -609,10 +612,11 @@ def upload_image():
         if not task:
             return jsonify({"error": "Task not found"}), 404
         
-         # Update repsCompleted dictionary
-        reps_completed = json.loads(task.repsCompleted)
-        reps_completed[current_user.username] += 1
-        task.repsCompleted = json.dumps(reps_completed)
+        if ai_verified:
+            # Update repsCompleted dictionary
+            reps_completed = json.loads(task.repsCompleted)
+            reps_completed[current_user.username] += 1
+            task.repsCompleted = json.dumps(reps_completed)
     
      # Update lastMessage in the contract
     contract.lastMessage = json.dumps({
@@ -627,10 +631,12 @@ def upload_image():
                       media_url=media_url,
                       sender_id=sender_id,
                       contract_id=contract_id,
-                      task_id=task_id)
+                      task_id=task_id,
+                      ai_verified = ai_verified)
     db.session.add(message)
     db.session.commit()
 
+    print('AI verified:', ai_verified)
     # Emit the message via WebSocket
     socketio.emit('new_message', {
         "id": message.id,
@@ -640,7 +646,8 @@ def upload_image():
         "created_at": message.created_at.isoformat(),
         "media_url": message.media_url,
         "task_id": task_id,
-        "task_name": task.name if task else None
+        "task_name": task.name if task else None,
+        "ai_verified": ai_verified
     }, room=f"contract_{contract_id}")
 
 
