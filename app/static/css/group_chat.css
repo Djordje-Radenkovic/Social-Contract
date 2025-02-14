@@ -3,6 +3,7 @@ body {
     background-color: #f0f2f5;
     margin: 0;
     padding: 0;
+    margin: 0;
 }
 
 #chat-container {
@@ -14,7 +15,7 @@ body {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: 90vh;
+    height: 100vh;
 }
 
 #chat-window {
@@ -36,41 +37,31 @@ body {
     margin-bottom: 10px;
 }
 
-.message-avatar {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    font-size: 18px;
-    color: white;
+
+#top-bar {
+    height: 40px !important;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-right: 10px;
-    background-color: #6c757d;
-    text-transform: uppercase;
 }
 
-.message-bubble {
-    background-color: white;
-    border-radius: 15px;
-    padding: 10px;
-    max-width: 70%;
-    word-wrap: break-word;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+#back-arrow {
+    position: absolute;
+    left: 10px; /* Push arrow to the far left */
+    font-size: 20px;
+    text-decoration: none;
+    color: black;
 }
 
-.message-bubble img {
-    max-width: 100%;
-    border-radius: 10px;
-    margin-top: 5px;
-}
-
-.message-bubble.you {
-    background-color: #d1e7dd;
+#chat-title {
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center; /* Ensures text is centered */
+    flex-grow: 1; /* Ensures it takes up space */
 }
 
 #message-input {
+    bottom: 0;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -106,9 +97,6 @@ body {
 }
 
 
-/* Here add how completion message should look */
-.completion-message {
-}
 
 .spinner-container {
     display: flex;

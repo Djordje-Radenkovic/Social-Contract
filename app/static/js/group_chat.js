@@ -40,7 +40,11 @@ function loadMessages() {
                 
                 messagesList.appendChild(li);
             });
-            messagesList.scrollTop = messagesList.scrollHeight;
+             // Ensure scrolling only after rendering is done
+            setTimeout(() => {
+                const chatWindow = document.getElementById('chat-window');
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }, 100);
         })
         .catch(error => {
             console.error("Error fetching messages:", error);
@@ -86,7 +90,11 @@ socket.on('new_message', (msg) => {
     }
 
     messagesList.appendChild(li);
-    messagesList.scrollTop = messagesList.scrollHeight; // Auto-scroll to the latest message
+   
+    const chatWindow = document.getElementById('chat-window');
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+    
+    // messagesList.scrollTop = messagesList.scrollHeight; // Auto-scroll to the latest message
 });
 
 
