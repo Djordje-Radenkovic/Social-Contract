@@ -63,9 +63,28 @@ button:hover {
 
 /* Logout Button */
 .logout-button {
-    background: #ff4b4b;
+    background: white;
+    color: red;
+    border: 1px solid red;
 }
 
 .logout-button:hover {
-    background: #cc0000;
+    background: #ffcccc;
 }
+
+.profile-initial {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0f9eff, #7fc8ff); /* Blue gradient */
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 10px auto; /* Center it */
+    margin-top: 30px !important;
+}
+

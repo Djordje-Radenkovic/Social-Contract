@@ -4,22 +4,24 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
 {% endblock %}
 {% block content %}
-<div class="top-bar">
-    <h1>Your Profile</h1>
-</div>
-<div class="main-content">
-    <p>Welcome, {{ user.username }}!</p>
-    <p>Your balance is {{ balance }}</p>
-    <p>Your Solana Public address is {{ sol_address }}</p>
-    <form method="POST" action="{{ url_for('main.update_profile') }}">
-        <label for="username">Username:</label>
-        <input type="text" name="username" value="{{ user.username }}" required>
-        <button type="submit">Update</button>
-    </form>
-    <!-- Add Logout Button -->
+<div class="contentt">
+    <div class="top-bar">
+        <h1>Your Profile</h1>
+    </div>
+    <div class="profile-initial">
+        {{ user.username[0] | upper }}
+    </div>
+    
+    <div class="main-content">
+        <p>Welcome, {{ user.username }}!</p>
+        <p>Your balance is {{ balance }}</p>
+        <p>Your Solana Public address is {{ sol_address }}</p>
+    </div>
+    
     <form method="GET" action="{{ url_for('main.logout') }}" style="margin-top: 20px;">
         <button type="submit" class="logout-button">Logout</button>
     </form>
+    
 </div>
 
 <nav class="bottom-nav">

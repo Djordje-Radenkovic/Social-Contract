@@ -6,7 +6,7 @@
 
 {% block content %}
 <div id="top-bar">
-    <a href="/" id="back-arrow">←</a>
+    <a href="/" id="back-arrow"><i class="fa-solid fa-chevron-left fa-lg" style="color: #0FA2FF;"></i></a>
     <span id="chat-title">{{ contract.name }}</span>
 </div>
 
@@ -21,7 +21,7 @@
 
    
     <div id="message-input">
-        <div id="attachment-strip">
+        <div id="attachment-strip" style="display: none;">
             <select id="task-selector">
                 <option value="" disabled selected>Select a task</option>
                 {% for task in tasks %}
@@ -32,9 +32,11 @@
             </select>
             <input id="message-image" type="file" accept="image/*" style="display: none;" class="mobile-friendly-input">
         </div>
-        <textarea id="message-text" placeholder="Type your message..."></textarea>    
-        <button id="attach-button">📎</button>
-        <button class="send-button" id="send-button">Send</button>
+        <div class="texto">
+            <textarea id="message-text" placeholder="Type your message..."></textarea>    
+            <button id="attach-button"><i class="fa-solid fa-circle-check fa-2xl" style="color: #0FA2FF;"></i></button>
+            <button class="send-button" id="send-button"><i class="fa-solid fa-paper-plane fa-2xl" style="color: #0FA2FF;"></i></button>
+        </div>
     </div>
 
     {% if current_user in contract.invited_users %}
@@ -129,6 +131,8 @@ function removeAttachment() {
 }
 
 document.getElementById('send-button').addEventListener('click', () => {
+    document.getElementById('attachment-strip').style.display = 'none';
+
     const messageText = document.getElementById('message-text').value.trim();
     const imageFile = document.getElementById('message-image').files[0]; // Get the image file
     const messagesList = document.getElementById('messages'); // Group chat message container
@@ -162,10 +166,15 @@ document.getElementById('send-button').addEventListener('click', () => {
             li.style.alignItems = 'flex-start'; // Align left
 
             // ✅ Text Above (Task Completion)
-            const taskText = document.createElement('p');
-            taskText.textContent = `${username} submitted task: ${window.selectedTaskName}!`;
-        
-            li.appendChild(taskText);
+            // const taskText = document.createElement('p');
+            // taskText.textContent = `${username} submitted task: ${window.selectedTaskName}!`;
+            // li.appendChild(taskText);
+
+            const userColor = getFixedColor(username);
+            const messageHTML = `<span style="color: ${userColor}; font-weight: bold;">${username}</span> submitted task: ${window.selectedTaskName}`;
+            const messageElement = document.createElement('span');
+            messageElement.innerHTML = messageHTML;
+            li.appendChild(messageElement);
 
             // ✅ Row Container for Image + Spinner
             const rowContainer = document.createElement('div');

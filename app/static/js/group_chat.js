@@ -1,3 +1,9 @@
+function getFixedColor(username) {
+    const hash = username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const colors = ['#FF5733', '#33FF57', '#3357FF', '#F0A500', '#9C33FF'];
+    return colors[hash % colors.length]; // Pick a color based on the hash
+}
+
 function loadMessages() {
     // fetch(`/get_messages/${contractId}`)
     fetch(`/get_messages/${contractId}?t=${new Date().getTime()}`)
@@ -12,7 +18,7 @@ function loadMessages() {
                 const li = document.createElement('li');
                 li.style.display = 'flex';
                 li.style.flexDirection = 'column';
-                li.style.marginBottom = '10px';
+                li.style.marginBottom = '0px';
 
                 //check if message has image
                 if (msg.media_url) {
@@ -22,20 +28,20 @@ function loadMessages() {
                     img.alt = "Image";
                     img.style.maxWidth = "200px"; // Adjust as needed
                     img.style.maxHeight = "200px";
+                    img.style.marginTop = "5px";
 
                     // Add load event listener to each image
-                    img.onload = () => {
-                        // messagesList.scrollTop = messagesList.scrollHeight;
-                        // document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
-                    };
-
                     let messageText;
+                    const userColor = getFixedColor(msg.sender_name);
+                    const usernameSpan = `<span style="color: ${userColor}; font-weight: bold;">${msg.sender_name}</span>`;
                     if (msg.ai_verified === false) {
-                        messageText = `${msg.sender_name} ❌ failed AI verification for task: ${msg.task_name}`;
+                        messageText = `❌ ${usernameSpan} failed AI verification for task: ${msg.task_name}`;
                     } else {
-                        messageText = `${msg.sender_name} ✅ completed task: ${msg.task_name}!`;
+                        messageText = `✅ ${usernameSpan} completed task: ${msg.task_name}!`;
                     }
-                    const textNode = document.createTextNode(messageText);
+                    // const textNode = document.createTextNode(messageText);
+                    const textNode = document.createElement('span');
+                    textNode.innerHTML = messageText;
 
                     // const textNode = document.createTextNode(
                     //     msg.task_name ? `${msg.sender_name} completed task: ${msg.task_name}!` : `${msg.sender_name} sent an image`
@@ -47,10 +53,18 @@ function loadMessages() {
 
 
                 // Check if the message has content
+                // if (msg.content) {
+                //     const textNode = document.createTextNode(`${msg.sender_name}: ${msg.content}`);
+                //     li.appendChild(textNode);
+                // }
                 if (msg.content) {
-                    const textNode = document.createTextNode(`${msg.sender_name}: ${msg.content}`);
-                    li.appendChild(textNode);
+                    const userColor = getFixedColor(msg.sender_name);
+                    const messageHTML = `<span style="color: ${userColor}; font-weight: bold;">${msg.sender_name}:</span> ${msg.content}`;
+                    const messageElement = document.createElement('span');
+                    messageElement.innerHTML = messageHTML;
+                    li.appendChild(messageElement);
                 }
+                
 
                 
                 messagesList.appendChild(li);
@@ -87,9 +101,16 @@ socket.on('new_message', (msg) => {
 
     // Add the text if content is present
     if (msg.content) {
-        const textNode = document.createTextNode(`${msg.sender_name}: ${msg.content}`);
-        li.appendChild(textNode);
+        const userColor = getFixedColor(msg.sender_name);
+        const messageHTML = `<span style="color: ${userColor}; font-weight: bold;">${msg.sender_name}:</span> ${msg.content}`;
+        const messageElement = document.createElement('span');
+        messageElement.innerHTML = messageHTML;
+        li.appendChild(messageElement);
     }
+    // if (msg.content) {
+    //     const textNode = document.createTextNode(`${msg.sender_name}: ${msg.content}`);
+    //     li.appendChild(textNode);
+    // }
     // Add the image if media_url is present
     if (msg.media_url) {
         li.classList.add('completion-message');
@@ -100,9 +121,14 @@ socket.on('new_message', (msg) => {
         img.style.maxHeight = "200px";
         img.loading = "lazy";
 
-        let messageText;
-        const textNode = document.createTextNode(`${msg.sender_name} ✅ completed task: ${msg.task_name} !`);
-        li.appendChild(textNode);
+        const userColor = getFixedColor(msg.sender_name);
+        const messageHTML = `<span style="color: ${userColor}; font-weight: bold;">${msg.sender_name}</span> completed task: ${msg.task_name}`;
+        const messageElement = document.createElement('span');
+        messageElement.innerHTML = messageHTML;
+        li.appendChild(messageElement);
+
+        // const textNode = document.createTextNode(`✅ ${msg.sender_name} completed task: ${msg.task_name} !`);
+        // li.appendChild(textNode);
         li.appendChild(img);
     }
 

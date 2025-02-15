@@ -343,11 +343,23 @@ function toggleVisibility(type) {
 }
 
 // Generate a consistent color for each username
-function getFixedColor(username) {
-    const hash = username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const colors = ['#FF5733', '#33FF57', '#3357FF', '#F0A500', '#9C33FF'];
-    return colors[hash % colors.length]; // Pick a color based on the hash
+// function getFixedColor(username) {
+//     const hash = username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+//     const colors = ['#FF5733', '#33FF57', '#3357FF', '#F0A500', '#9C33FF'];
+//     return colors[hash % colors.length]; // Pick a color based on the hash
+// }
+
+function getContractGradient(contractName) {
+    const hash = contractName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const colors = ['#FF5733', '#33FF57', '#3357FF', '#F0A500', '#9C33FF', '#FF33A8', '#A833FF'];
+
+    // Select two colors based on the hash
+    const color1 = colors[hash % colors.length];
+    const color2 = colors[(hash + 3) % colors.length]; // Offset to get a different second color
+
+    return `linear-gradient(135deg, ${color1}, ${color2})`;
 }
+
 
 function renderUserList(userList) {
     const userContainer = document.getElementById('suggested-users');

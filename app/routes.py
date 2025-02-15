@@ -49,6 +49,26 @@ client = OpenAI()
 
 ################ NAVIGATION ###############
 
+import hashlib
+
+def get_contract_gradient(contract_name):
+    # Generate a hash from the contract name
+    hash_value = int(hashlib.md5(contract_name.encode()).hexdigest(), 16)  
+
+    # Use hash to pick a highly varied hue (0-360°) for strong differences
+    hue = hash_value % 360  
+    
+    # Set saturation and lightness values
+    saturation = 70  # 70% for vibrant color
+    lightness1 = 65  # Lighter shade
+    lightness2 = 45  # Darker shade for gradient
+
+    # Convert to HSL format for CSS
+    color1 = f"hsl({hue}, {saturation}%, {lightness1}%)"
+    color2 = f"hsl({hue}, {saturation}%, {lightness2}%)"
+
+    return f'linear-gradient(135deg, {color1}, {color2})'
+
 
 
 @main.route('/')
@@ -69,13 +89,16 @@ def contracts():
         .distinct()
         .all()
     )
+    
+    
 
     # Map public stories data
     stories = [
         {
             "id": contract.id,
+            "gradient": get_contract_gradient(contract.name),
             "name": contract.name,
-            "image": contract.image,
+            "image": Message.query.filter_by(contract_id=contract.id).filter(Message.media_url.isnot(None)).all()[-1].media_url, #contract.image,
         }
         for contract in public_stories_contracts
     ]
@@ -91,6 +114,7 @@ def contracts():
     contracts = [
             {
                 "id": contract.id,
+                "gradient": get_contract_gradient(contract.name),
                 "active": contract.active,
                 "name": contract.name,
                 "progressInterval": interval_map[contract.progressInterval],
@@ -119,7 +143,7 @@ def contracts():
     user_agent = request.user_agent.string.lower()
     print(user_agent)
     
-    if True:#"mobile" in user_agent:
+    if "mobile" in user_agent:
         return render_template('contracts.html', user=current_user, stories=stories, contracts=contracts)
     else:
         return render_template('desktop.html')
@@ -162,7 +186,7 @@ def login():
     user_agent = request.user_agent.string.lower()
     print(user_agent)
     
-    if True:#"mobile" in user_agent:
+    if "mobile" in user_agent:
         return render_template('login.html')
     else:
         return render_template('desktop.html')

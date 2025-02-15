@@ -25,9 +25,19 @@
         <a href="{{ url_for('main.contract_stories', contract_id=story.id) }}" class="story">
             <div class="story-border">
                 <div class="story-inner-wrapper">
-                    <div class="story-inner" 
+                    <!-- <div class="story-inner"
+                                    style="
+                                        {% if story.image %}
+                                            background-image: url('{{ story.image }}');
+                                        {% else %}
+                                            background: {{ story.gradient }};
+                                        {% endif %}
+                                    ">
+                    </div> -->
+                    <div class="story-inner"
                             style="background-image: url('{{ story.image or "https://picsum.photos/300?random=" + story.name[0] + "&theme=water" }}');">
                     </div>
+                    
                     <!-- <div class="story-inner" style="background-image: url('{{ story.image }}');"></div> -->
                 </div>
             </div>
@@ -53,12 +63,15 @@
                                 <div class="story-inner" 
                                         style="background-image: url('{{ contract.image or "https://picsum.photos/300?random=" + contract.name[0] + "&theme=water" }}');">
                                 </div>
-                        
-                                <!-- <div class="story-inner" style="background-image: url('{{ contract.image or "https://picsum.photos/300" }}');"></div> -->
-
-                                <!-- <div class="story-inner" style="background-image: url('{{ contract.image or "https://robohash.org/" + contract.id|string + ".png?size=300x300" }}');"></div> -->
-
-                                <!-- <div class="story-inner" style="background-image: url('{{ contract.image }}');"></div> -->
+                                <!-- <div class="story-inner"
+                                    style="
+                                        {% if contract.image %}
+                                            background-image: url('{{ contract.image }}');
+                                        {% else %}
+                                            background: {{ contract.gradient }};
+                                        {% endif %}
+                                    ">
+                                </div> -->
                             </div>
                         </div>
                     </a>
@@ -213,12 +226,15 @@
             </div>
             <div class="form-group">
                 <label for="contract-expiry">Contract Expiry</label>
-                <input
+                <div class="task-tem">
+                    <input
                     type="date"
                     id="contract-expiry"
                     name="contract-expiry"
                     required
                 >
+                </div>
+               
             </div>            
             <div class="form-group">
                 <label>Tasks</label>
@@ -280,7 +296,7 @@
         </div>
     </div>
 </div>
-
+<!-- 
 <div id="frequencyModal" class="modal" style="display: none;">
     <div class="modal-content">
         <div class="modal-header">
@@ -311,9 +327,36 @@
         </div>
     </div>
 </div>
+ -->
 
-
-
+<div id="frequencyModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button class="back-btn" onclick="closeFrequencyModal()">Back</button>
+            <h2>Modify Task</h2>
+            <button class="done-btn" onclick="saveFrequency()">Done</button>
+        </div>
+        <div class="modal-body">
+            <div class="frequency-options">
+                <label>
+                    <input type="radio" name="frequency" value="daily" checked onclick="toggleFrequencyInputs('daily')" />
+                    Daily
+                </label>
+                <label>
+                    <input type="radio" name="frequency" value="x-times" onclick="toggleFrequencyInputs('x-times')" />
+                    X times a week
+                </label>
+                <input type="number" id="times-per-week" min="1" max="7" placeholder="Times per week" />
+                <label>
+                    <input type="radio" name="frequency" value="by-date" onclick="toggleFrequencyInputs('by-date')" />
+                    By Date
+                </label>
+                <input type="date" id="specific-date" />
+            </div>
+            <button class="delete-task-btn" onclick="deleteTask()">Delete Task</button>
+        </div>
+    </div>
+</div>
 
 
 {% endblock %}
