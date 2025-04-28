@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% block extra_head %}
+    <!-- <meta name='viewport' content='initial-scale=1, viewport-fit=cover'> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/group_chat.css') }}">
+{% endblock %}
+
+{% block content %}
+<div id="top-bar">
+    <a href="/" id="back-arrow"><i class="fa-solid fa-chevron-left fa-lg" style="color: #0FA2FF;"></i></a>
+    <span id="chat-title">{{ contract.name }}</span>
+</div>
+
+<div id="chat-container">
+    <div id="chat-window">
+        <ul id="messages">
+            <!-- Messages will be dynamically loaded here -->
+        </ul>
+    </div>    
+    <!-- Strip for Task Selector & File Input -->
+    
+
+   
+    <div id="message-input">
+        <div id="attachment-strip" style="display: none;">
+            <select id="task-selector">
+                <option value="" disabled selected>Select a task</option>
+                {% for task in tasks %}
+                    <option value="{{ task.id }}" data-task-name="{{ task.name }}" data-deadline="{{ task.deadline }}">
+                        {{ task.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <input id="message-image" type="file" accept="image/*" style="display: none;" class="mobile-friendly-input">
+        </div>
+        <div class="texto">
+            <textarea id="message-text" placeholder="Type your message..."></textarea>    
+            <button id="attach-button"><i class="fa-solid fa-circle-check fa-2xl" style="color: #0FA2FF;"></i></button>
+            <button class="send-button" id="send-button"><i class="fa-solid fa-paper-plane fa-2xl" style="color: #0FA2FF;"></i></button>
+        </div>
+    </div>
+
+    {% if current_user in contract.invited_users %}
+        <div id="invitation-actions">
+            <button id="accept-button">Accept</button>
+            <button id="decline-button">Decline</button>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    const contractId = "{{ contract.id }}";
+    const userId = "{{ user.id }}";
+
+    // Check for undefined contractId or userId
+    if (!contractId || !userId) {
+        console.error("Missing contractId or userId!");
+    }
+</script>
+
+
+<!-- Include Socket.IO client library -->
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<!-- Include your custom JavaScript -->
+<script src="{{ url_for('static', filename='js/group_chat.js') }}"></script>
+<script>
+
+    document.getElementById('attach-button').addEventListener('click', () => {
+        const attachmentStrip = document.getElementById('attachment-strip');
+        const fileInput = document.getElementById('message-image');
+        const taskSelector = document.getElementById('task-selector');
+
+        taskSelector.style.display = 'block'; // Show the dropdown
+        attachmentStrip.style.display = 'block';
+        fileInput.style.display = 'none'
+        taskSelector.focus(); // Focus on it
+    });
+
+    document.getElementById('task-selector').addEventListener('change', () => {
+        const taskSelector = document.getElementById('task-selector');
+        const selectedTask = taskSelector.value;
+        const selectedTaskName = taskSelector.selectedOptions[0]?.getAttribute('data-task-name');
+
+        if (selectedTask) {
+            // Save the selected task globally
+            window.selectedTaskId = selectedTask;
+            window.selectedTaskName = selectedTaskName;
+
+            // Instead of programmatically clicking, show the file input
+            const fileInput = document.getElementById('message-image');
+            fileInput.style.display = 'block';  // M
+
+            // Trigger the file input for image selection
+            //document.getElementById('message-image').click();
+
+            // Reset the task selector to its default state
+            taskSelector.selectedIndex = 0; // Reset to the default "Select a task" option
+            taskSelector.style.display = 'none'; // Hide the dropdown after selection
+        }
+    });
+
+    document.getElementById('message-image').addEventListener('change', function () {
+    const fileInput = this;
+    const attachmentPreview = document.getElementById('attachment-preview') || createAttachmentPreview();
+
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            attachmentPreview.innerHTML = `<img src="${e.target.result}" alt="Attachment" style="max-height: 100px; margin-bottom: 5px;"> <button onclick="removeAttachment()">Remove</button>`;
+        };
+        reader.readAsDataURL(file);
+        }
+    });
+
+function createAttachmentPreview() {
+    const preview = document.createElement('div');
+    preview.id = 'attachment-preview';
+    preview.style.marginBottom = '10px';
+    document.getElementById('message-input').insertAdjacentElement('beforebegin', preview);
+    return preview;
+}
+
+function removeAttachment() {
+    const preview = document.getElementById('attachment-preview');
+    if (preview) {
+        preview.remove();
+        document.getElementById('message-image').value = ''; // Clear file input
+        document.getElementById('attachment-strip').style.display = 'none';
+    }
+}
+
+document.getElementById('send-button').addEventListener('click', () => {
+    document.getElementById('attachment-strip').style.display = 'none';
+
+    const messageText = document.getElementById('message-text').value.trim();
+    const imageFile = document.getElementById('message-image').files[0]; // Get the image file
+    const messagesList = document.getElementById('messages'); // Group chat message container
+    const username = "{{ user.username }}"; // Pass the username to the frontend
+
+    // 1. Send the text message immediately (if it exists)
+    if (messageText) {
+        socket.emit('send_message', {
+            contract_id: contractId,
+            sender_id: userId,
+            content: messageText,
+            media_url: null
+        });
+
+        // Clear the text input immediately
+        document.getElementById('message-text').value = "";
+    }
+
+    // 2. Handle the image upload and display immediately (if it exists)
+    if (imageFile) {
+        removeAttachment(); // Remove the file preview
+        const reader = new FileReader();
+        const tempImgId = `temp-${Date.now()}`; // Unique ID for the temporary image
+
+        reader.onload = function (e) {
+            const li = document.createElement('li');
+            li.id = `temp-li-${tempImgId}`;
+            li.classList.add('completion-message');
+            li.style.display = 'flex';
+            li.style.flexDirection = 'column'; // Ensures text is above image + spinner
+            li.style.alignItems = 'flex-start'; // Align left
+
+            // ✅ Text Above (Task Completion)
+            // const taskText = document.createElement('p');
+            // taskText.textContent = `${username} submitted task: ${window.selectedTaskName}!`;
+            // li.appendChild(taskText);
+
+            const userColor = getFixedColor(username);
+            const messageHTML = `<span style="color: ${userColor}; font-weight: bold;">${username}</span> submitted task: ${window.selectedTaskName}`;
+            const messageElement = document.createElement('span');
+            messageElement.innerHTML = messageHTML;
+            li.appendChild(messageElement);
+
+            // ✅ Row Container for Image + Spinner
+            const rowContainer = document.createElement('div');
+            rowContainer.style.display = 'flex';
+            rowContainer.style.alignItems = 'center'; // Ensures spinner aligns with image
+            rowContainer.style.gap = '10px'; // Adds space between image and spinner
+
+            // ✅ Placeholder Image (Left Side)
+            const imgElement = document.createElement('img');
+            imgElement.src = e.target.result;
+            imgElement.alt = "Uploading...";
+            imgElement.id = tempImgId;
+            imgElement.style.maxWidth = "200px";
+            imgElement.style.maxHeight = "200px";
+
+            // ✅ AI Analyzing Spinner (Right Side)
+            const aiLoader = document.createElement('div');
+            aiLoader.id = `loader-${tempImgId}`;
+            aiLoader.classList.add('spinner-container');
+            aiLoader.innerHTML = `
+                <div class="spinner"></div>
+                <p class="ai-text">AI analyzing...</p>
+            `;
+
+            // ✅ Append Image and Spinner in the Row Container
+            rowContainer.appendChild(imgElement);
+            rowContainer.appendChild(aiLoader);
+
+            // ✅ Append Everything to the List Item
+            li.appendChild(rowContainer);
+            messagesList.appendChild(li);
+            
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+        };
+
+        
+
+        reader.readAsDataURL(imageFile); // Load the image as a preview
+
+        // Upload the image to the backend (combined with message creation)
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        formData.append('contract_id', contractId); // Pass contract ID
+        formData.append('sender_id', userId); // Pass sender ID
+        formData.append('task_id', window.selectedTaskId); // Pass the selected task ID
+
+        fetch('/upload_image', {
+            method: 'POST',
+            body: formData,
+        }
+        )
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error("Error uploading image:", data.error);
+                    alert("Error uploading image.");
+                    document.getElementById(`temp-li-${tempImgId}`)?.remove(); // Remove the temp image on failure
+                    return;
+                }
+
+                // Replace the temporary image with the actual uploaded image URL
+                const tempImg = document.getElementById(tempImgId);
+                if (tempImg) {
+                    tempImg.src = data.media_url;
+                    tempImg.alt = "Uploaded Image";
+                }
+
+                // Remove the temporary <li> after real message is emitted
+                document.getElementById(`temp-li-${tempImgId}`)?.remove();
+            })
+            .catch(error => {
+                console.error("Error uploading image:", error);
+                document.getElementById(`temp-li-${tempImgId}`)?.remove(); // Remove the temp image on failure
+            });
+
+        // Clear the file input immediately
+        document.getElementById('message-image').value = "";
+    }
+});
+
+//////////////////////////
+document.getElementById('send-button').addEventListener('click', refocusChat);
+document.getElementById('message-text').addEventListener('blur', refocusChat);
+
+
+
+
+
+</script>
+
+{% endblock %}

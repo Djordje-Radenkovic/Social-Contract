@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui" >
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+{% endblock %}
+{% block content %}
+<div class="auth-container">
+    <h2>Social Contract</h2>
+    <h1>Login</h1>
+    <form action="{{ url_for('main.login') }}" method="POST" class="forma">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Log In</button>
+    </form>
+
+    <!-- Redirect to Signup -->
+    <p>Don't have an account? <a href="{{ url_for('main.signup') }}">Sign up here</a>.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+/* General Styling */
+.main-content {
+    width: 100%;
+    max-width: 320px; /* Ensures it doesn't overflow the mobile frame */
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center; /* Centers the content */
+    /* background: linear-gradient(135deg, rgba(15, 162, 255, 0.3) 10%, rgba(250, 23, 134, 0.3) 90%); */
+
+}
+
+
+/* Welcome Message */
+.main-content p {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 10px;
+    word-wrap: break-word; /* Ensures long text like the Solana address wraps */
+}
+
+/* Solana Address Styling */
+.main-content p:nth-of-type(3) { /* Target the third <p> (Solana address) */
+    font-size: 14px;
+    word-break: break-all; /* Prevents overflow */
+    color: #666;
+}
+
+/* Form Styling */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Input Fields */
+input[type="text"] {
+    width: 100%;
+    max-width: 280px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    text-align: center;
+}
+
+/* Buttons */
+button {
+    width: 100%;
+    max-width: 280px;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    background: var(--blue);
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #007acc;
+}
+
+/* Logout Button */
+.logout-button {
+    background: white;
+    color: red;
+    border: 1px solid red;
+}
+
+.logout-button:hover {
+    background: #ffcccc;
+}
+
+.profile-initial {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0f9eff, #7fc8ff); /* Blue gradient */
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 10px auto; /* Center it */
+    margin-top: 30px !important;
+}
+

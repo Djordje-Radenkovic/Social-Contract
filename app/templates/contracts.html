@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+{% block extra_head %}
+    <!-- Link both global styles and the specific problems page styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/contracts.css') }}?v=1.0">
+{% endblock %}
+
+{% block content %}
+<div class="top-fixed">
+    <div class="top-bar">
+        <h1>Social Contracts</h1>
+        <!-- <a href="{{ url_for('main.create_contract') }}" class="create-groupchat-btn">
+            <i class="fa-regular fa-pen-to-square" style="color: var(--blue);"></i>
+        </a> -->
+        <button onclick="openModal()" class="create-groupchat-btn">
+            <!-- <i class="fa-regular fa-pen-to-square" style="color: var(--blue);"></i> -->
+            <i class="fa-solid fa-plus" style="color: var(--blue);"></i>
+        </button>
+        <!-- <button class="create-groupchat-btn"><i class="fa-regular fa-pen-to-square" style="color: var(--blue);"></i></button> -->
+    </div>
+</div>
+
+<div class="stories-container">
+    <div class="stories">
+        {% for story in stories %}
+        <a href="{{ url_for('main.contract_stories', contract_id=story.id) }}" class="story">
+            <div class="story-border">
+                <div class="story-inner-wrapper">
+                    <!-- <div class="story-inner"
+                                    style="
+                                        {% if story.image %}
+                                            background-image: url('{{ story.image }}');
+                                        {% else %}
+                                            background: {{ story.gradient }};
+                                        {% endif %}
+                                    ">
+                    </div> -->
+                    <div class="story-inner"
+                            style="background-image: url('{{ story.image or "https://picsum.photos/300?random=" + story.name[0] + "&theme=water" }}');">
+                    </div>
+                    
+                    <!-- <div class="story-inner" style="background-image: url('{{ story.image }}');"></div> -->
+                </div>
+            </div>
+            <p class="story-title">{{ story.name }}</p>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Contracts Section -->
+<div class="contracts">
+    {% for contract in contracts %}
+        {% if contract.active %}
+            <div class="contract-card">                
+                <div class="contract-header">
+                    <!-- <img src="{{ contract.image }}" alt="{{ contract.name }}"> -->
+                    <a href="{{ url_for('main.contract_stories', contract_id=contract.id) }}" class="story">
+                        <div class="story-border" style="background: {% if not contract.has_stories %} lightgrey {% endif %};">
+                            <div class="story-inner-wrapper">
+                                <!-- Instead of using contract.image directly -->
+
+                            
+                                <div class="story-inner" 
+                                        style="background-image: url('{{ contract.image or "https://picsum.photos/300?random=" + contract.name[0] + "&theme=water" }}');">
+                                </div>
+                                <!-- <div class="story-inner"
+                                    style="
+                                        {% if contract.image %}
+                                            background-image: url('{{ contract.image }}');
+                                        {% else %}
+                                            background: {{ contract.gradient }};
+                                        {% endif %}
+                                    ">
+                                </div> -->
+                            </div>
+                        </div>
+                    </a>
+                    <!-- <a href="{{ url_for('main.contract_group_chat', contract_id=contract.id) }}" class="contract-card-link"> -->
+                        <a href="{{ url_for('main.contract_group_chat', contract_id=contract.id) }}" class="contract-card-body">
+                            <div class="contract-card-header">
+                                    <h2>{{ contract.name }}</h2>
+                                    <p>{{ contract.progressInterval}} {{ contract.progressIntervalsCompleted + 1 }} 🔥</p>                        
+                            </div>
+                            <p class="{{ 'red-message' if current_user.username in contract.lastMessage.messageReadBy else 'unred-message' }}">
+                                {% if not current_user.username in contract.lastMessage.messageReadBy %}
+                                    <span style="display: inline-block; width: 5px; height: 5px; background-color: #FE0063; border-radius: 50%;  vertical-align: middle;"></span>
+                        
+                                {% endif %}
+                                {% if current_user.username == contract.lastMessage.sender %}
+                                    You
+                                {% else %}
+                                    {{ contract.lastMessage.sender }} 
+                                {% endif %}
+                                {% if contract.lastMessage.type == 'completion' %}
+                                    completed a task
+                                {% elif contract.lastMessage.type == 'message' %}
+                                    sent a message
+                                {% elif contract.lastMessage.type == 'initiation' %}
+                                    created a contract!
+                                {% endif %}
+                                <span class="time">• {{ contract.lastMessage.timeReceived }}</span>
+                            </p>
+                        </a>
+                    <!-- </a> -->
+                </div>
+                <div class="tasks">
+                    {% for task in contract.tasks %}
+
+                        <a class="task" onclick="handleTaskClick('{{ task.id }}', '{{ task.name }}', '{{ contract.id }}', '{{ current_user.id }}')" style="position: relative; background-color: white; overflow: hidden;">
+                    
+                            <!-- Blue Overlay for Progress -->
+                            {% if task.repsTotal > 0 %}
+                                <div style="
+                                    position: absolute; 
+                                    top: 0; 
+                                    left: 0; 
+                                    height: 100%; 
+                                    width: {{ (task.repsCompleted / task.repsTotal) * 100 }}%; 
+                                    background-color: #DAF2FF; 
+                                    border-top-right-radius: 17px; 
+                                    border-bottom-right-radius: 17px; 
+                                    z-index: 0;">
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Task Content -->
+                            <div class="task-content">
+                                <div class="task-left">
+                                    {% if task.repsCompleted >= task.repsTotal %}
+                                        <i class="fa-solid fa-square-check fa-lg" style="color: var(--blue);"></i>
+                                    {% else %}
+                                        <span style="display: inline-block; width: 17px; height: 17px; background-color: transparent; border-radius: 4px; border: 1px solid var(--blue); vertical-align: middle;"></span>
+                                    {% endif %}
+                                    <span class="task-name" style="margin-left: 5px;">{{ task.name }}</span>
+                                    {% if task.repsTotal > 1 and task.repsCompleted > 0 %}
+                                        ({{ task.repsCompleted }}/{{ task.repsTotal }})
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="task-right">
+                                    {{ task.intervalDeadline }}
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>            
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+    <a href="/" class="nav-item {% if request.endpoint == 'main.contracts' %}active{% endif %}">
+        <i class="fa-solid fa-file-contract"></i>
+        <span>Contracts</span>
+    </a>
+    <!-- <a href="/progress" class="nav-item {% if request.endpoint == 'main.progress' %}active{% endif %}">
+        <i class="fa-solid fa-trophy"></i>
+        <span>Progress</span>
+    </a> -->
+    <a href="/profile" class="nav-item {% if request.endpoint == 'main.profile' %}active{% endif %}">
+        <i class="fa-solid fa-gear"></i>
+        <span>Profile</span>
+    </a>
+</nav>
+<script src="{{ url_for('static', filename='js/contracts.js') }}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
+      // Send the timezone to the server
+      fetch('/set_timezone', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ timezone })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("Timezone updated:", data.message);
+      })
+      .catch(error => {
+        console.error("Error updating timezone:", error);
+      });
+    });
+  </script>
+  
+<script>
+    
+    // Select the top bar element
+    const topBar = document.querySelector('.top-fixed');
+
+    // Add a scroll event listener to the window
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 0) {
+            // Add shadow when scrolling starts
+            topBar.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.1)';
+        } else {
+            // Remove shadow when scrolled back to the top
+            topBar.style.boxShadow = 'none';
+        }
+    });
+</script>
+
+<input id="fileInput" type="file" accept="image/*" style="display: none;" onchange="handleFileUpload(event)" />
+
+<!-- Contract Creation Modal -->
+<div id="createContractModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button class="close-btn" onclick="closeModal()">Cancel</button>
+            <h2>New Contract</h2>
+            <button class="next-btn" onclick="openContractTypeModal()">Next</button>
+        </div>
+        <div class="modal-body">
+            <div class="contract-input-name">
+                <a class="camera" onclick="openFileUpload()">
+                    <i class="fa-solid fa-camera fa-2xl" style="color: var(--blue);"></i>
+                </a>
+                <input id="fileInput" type="file" accept="image/*" style="display: none;" onchange="handleFileUpload(event)">
+                
+                <input type="text" id="contract-name" placeholder="Name - what's your goal?" required>
+            </div>
+            <div class="form-group">
+                <label for="contract-expiry">Contract Expiry</label>
+                <div class="task-tem">
+                    <input
+                    type="date"
+                    id="contract-expiry"
+                    name="contract-expiry"
+                    required
+                >
+                </div>
+               
+            </div>            
+            <div class="form-group">
+                <label>Tasks</label>
+                <div id="task-list">
+                    <!-- Initial Task Input -->
+                    <div class="task-item">
+                        <input type="text" class="task-input" placeholder="e.g. workout for 30 min." />
+                        <button class="frequency-btn" onclick="openFrequencyModal(this)">Daily <i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <button class="add-task-btn" onclick="addTask()">
+                    <i class="fa-solid fa-circle-plus fa-xl" style="color: var(--blue); margin-right: 8px;"></i>Add Task
+                </button>
+            </div>            
+        </div>
+    </div>
+</div>
+  
+
+<!-- Second Modal (Contract Type) -->
+<div id="contractTypeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button class="back-btn" onclick="closeContractTypeModal()">Back</button>
+            <h2>Contract Type</h2>
+            <button class="create-btn" onclick="submitContract()">Create</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <!-- Public/Private Options -->
+                <div class="visibility-options">
+                    <label class="option">
+                        <input type="radio" name="visibility" value="public" checked onclick="toggleVisibility('public')">
+                        <div class="option-content">
+                            <span class="checkmark"></span>
+                            <span>Public</span>
+                        </div>
+                    </label>                    
+                    <label class="option">
+                        <input type="radio" name="visibility" value="private" onclick="toggleVisibility('private')">
+                        <div class="option-content">
+                            <span class="checkmark"></span>
+                            <span>Private</span>
+                        </div>
+                    </label>
+                </div>
+                <p class="option-description" id="public-description">Anyone can join and view stories.</p>
+                <p class="option-description" id="private-description" style="display: none;">Search for users and invite them to join.</p>
+
+                <div class="user-list-container">
+                    <!-- Search Input -->
+                    <input type="text" id="search-user" placeholder="Search username" oninput="filterUsers()">
+                
+                    <!-- User List -->
+                    <div id="suggested-users" class="user-list"></div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 
+<div id="frequencyModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button class="back-btn" onclick="closeFrequencyModal()">Back</button>
+            <h2>Modify Task</h2>
+            <button class="done-btn" onclick="saveFrequency()">Done</button>
+        </div>
+        <div class="modal-body">
+            <label>Frequency</label>
+            <div class="frequency-options">
+                <label>
+                    <input type="radio" name="frequency" value="daily" checked onclick="toggleFrequencyInputs('daily')" />
+                    Daily
+                </label>
+                <label>
+                    <input type="radio" name="frequency" value="x-times" onclick="toggleFrequencyInputs('x-times')" />
+                    X times a week
+                    <input type="number" id="times-per-week" min="1" max="7" placeholder="Times/week" style="display: none;" />
+                </label>
+                <label>
+                    <input type="radio" name="frequency" value="by-date" onclick="toggleFrequencyInputs('by-date')" />
+                    By Date
+                    <input type="date" id="specific-date" style="display: none;" />
+                </label>
+            </div>
+
+            <button class="delete-task-btn" onclick="deleteTask()">Delete Task</button>
+        </div>
+    </div>
+</div>
+ -->
+
+<div id="frequencyModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button class="back-btn" onclick="closeFrequencyModal()">Back</button>
+            <h2>Modify Task</h2>
+            <button class="done-btn" onclick="saveFrequency()">Done</button>
+        </div>
+        <div class="modal-body">
+            <div class="frequency-options">
+                <label>
+                    <input type="radio" name="frequency" value="daily" checked onclick="toggleFrequencyInputs('daily')" />
+                    Daily
+                </label>
+                <label>
+                    <input type="radio" name="frequency" value="x-times" onclick="toggleFrequencyInputs('x-times')" />
+                    X times a week
+                </label>
+                <input type="number" id="times-per-week" min="1" max="7" placeholder="Times per week" />
+                <label>
+                    <input type="radio" name="frequency" value="by-date" onclick="toggleFrequencyInputs('by-date')" />
+                    By Date
+                </label>
+                <input type="date" id="specific-date" />
+            </div>
+            <button class="delete-task-btn" onclick="deleteTask()">Delete Task</button>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

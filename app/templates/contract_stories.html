@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    <!-- Link both global styles and the specific problems page styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/contract_stories.css') }}?v=1.0">
+{% endblock %}
+
+{% block content %}
+<div class="story-viewer">
+    <!-- Top Bar -->
+    <div class="story-top">
+        <span id="story-username"></span>
+        <button class="close-btn" onclick="goBack()"><i class="fa-solid fa-xmark" style="color: white;"></i></button>
+    </div>
+    <!-- Navigation Buttons -->
+    <button id="prev-story-btn" class="nav-btn left" onclick="prevStory()">
+        <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <button id="next-story-btn" class="nav-btn right" onclick="nextStory()">
+        <i class="fa-solid fa-chevron-right"></i>
+    </button>
+
+
+    {% if stories|length == 0 %}
+        <div class="no-stories-message">
+            <p>No stories yet.</p>
+        </div>
+    {% else %}
+    
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+
+        <!-- Task Name and Icon -->
+        <div class="task-info">
+            <i class="fa-solid fa-square-check fa-lg" style="color: #63E6BE;"></i>
+            <span id="story-task"></span>
+        </div>
+
+        {% if contract.visibility == 'public' and not user_is_member %}
+            <button id="join-button" class="join-btn" onclick="joinContract({{ contract.id }})">
+                Join
+            </button>
+        {% endif %}
+
+        <!-- Story Content -->
+        <div id="story-container">
+            <img id="story-image" src="" alt="Story">
+        </div>
+    {% endif %}
+</div>
+
+
+<script>
+
+    const stories = {{ stories | tojson }};
+    let currentStoryIndex = 0;
+    let progressInterval;
+    let holdTimeout;
+
+    function joinContract(contractId) {
+        fetch(`/join_contract/${contractId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = `/contract/${contractId}`;  // Redirect to group chat
+            } else {
+                alert(data.error || "Failed to join the contract.");
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    }
+
+    function showStory(index) {
+        if (index >= 0 && index < stories.length) {
+            const story = stories[index];
+            document.getElementById('story-image').src = story.media_url;
+            document.getElementById('story-username').innerText = story.username;
+            document.getElementById('story-task').innerText = story.task_name || 'No Task'; // Add task name
+            restartProgress();
+            currentStoryIndex = index;
+
+            // Enable/disable buttons based on story position
+            document.getElementById('prev-story-btn').disabled = (currentStoryIndex === 0);
+            document.getElementById('next-story-btn').disabled = (currentStoryIndex === stories.length - 1);
+        }
+    }
+ 
+
+
+    function restartProgress() {
+        clearInterval(progressInterval);
+        let progress = 0;
+        document.getElementById('progress-bar').style.width = '0%';
+
+        progressInterval = setInterval(() => {
+            progress += 1;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            if (progress >= 100) {
+                nextStory();
+            }
+        }, 50);
+    }
+
+    function nextStory() {
+        if (currentStoryIndex < stories.length - 1) {
+            showStory(currentStoryIndex + 1);
+        } else {
+            goBack();
+        }
+    }
+
+    function prevStory() {
+        if (currentStoryIndex > 0) {
+            showStory(currentStoryIndex - 1);
+        }
+    }
+
+    function goBack() {
+        window.history.back();
+    }
+
+    // Pause Story on Hold
+    document.getElementById('story-container').addEventListener('mousedown', () => {
+        clearInterval(progressInterval);
+    });
+
+    document.getElementById('story-container').addEventListener('mouseup', () => {
+        restartProgress();
+    });
+
+    // Support touch devices (mobile)
+    document.getElementById('story-container').addEventListener('touchstart', () => {
+        clearInterval(progressInterval);
+    });
+
+    document.getElementById('story-container').addEventListener('touchend', () => {
+        restartProgress();
+    });
+
+    // Load First Story
+    document.addEventListener("DOMContentLoaded", () => {
+        if (stories.length > 0) {
+            showStory(0);
+        }
+    });
+</script>
+
+
+{% endblock %}

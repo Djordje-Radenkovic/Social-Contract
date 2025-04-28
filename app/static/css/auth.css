@@ -1,0 +1,139 @@
+:root { 
+    --blue: #0FA2FF;
+    --placeholder: #C1C0C8;
+    --orange: #FD4329;
+    --red:#FA1786;
+}
+
+
+/* Prevent White Space at the Top */
+html, body {
+    width: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(15, 162, 255, 0.3) 10%, rgba(250, 23, 134, 0.3) 90%);
+    touch-action: none;
+}
+
+/* Make `.auth-container` take full screen height */
+.auth-container {
+    height: 100vh; 
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center !important;
+    gap: 20px;
+}
+
+/* 🔳 Glass Input Fields */
+.auth-container input {
+    width: 100%;
+    max-width: 280px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-align: center;
+    outline: none;
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease-in-out;
+    margin-bottom: 15px;
+}
+
+/* 🔷 Title (Login / Signup) */
+.auth-container h1 {
+    font-size: 24px;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: linear-gradient(45deg, var(--blue), var(--red));
+    -webkit-background-clip: text;
+    color: transparent;
+    margin-bottom: 20px;
+}
+
+.auth-container input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.auth-container input:focus {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: #0FA2FF;
+}
+
+.auth-container button {
+    width: 140%  !important;
+    padding: 12px;
+    font-size: 16px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(45deg, var(--blue), var(--red));
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    backdrop-filter: blur(10px);
+}
+
+.auth-container button:hover {
+    transform: scale(1.05);
+}
+
+/* Center the form inside `.auth-container` */
+.auth-container form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* Ensure inputs and buttons stay within the centered form */
+.auth-container input, .auth-container button {
+    width: 100%;
+    max-width: 280px;
+    text-align: center;
+}
+
+.top-bar {
+    width: 100%;
+    margin-top: 80px;
+    height: 50px;
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* text-transform: uppercase; */
+}
+
+.auth-container a{
+    color: var(--blue);
+    text-decoration: none;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

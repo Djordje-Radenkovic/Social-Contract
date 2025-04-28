@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    <!-- Link both global styles and the specific problems page styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/contract_stories.css') }}?v=1.0">
+{% endblock %}
+
+{% block content %}
+<div class="stories-viewer">
+    <div id="story-container">
+        <img id="story-image" src="" alt="Story">
+        <div id="story-details">
+            <p id="story-username"></p>
+            <p id="story-task"></p>
+        </div>
+    </div>
+    <button id="prev-story" onclick="prevStory()">Previous</button>
+    <button id="next-story" onclick="nextStory()">Next</button>
+</div>
+<script src="{{ url_for('static', filename='js/contract_stories.js') }}"></script>
+
+<script>
+    const stories = {{ stories|tojson }};
+    let currentStoryIndex = 0;
+
+    function showStory(index) {
+        if (index >= 0 && index < stories.length) {
+            const story = stories[index];
+            document.getElementById('story-image').src = story.media_url;
+            document.getElementById('story-username').innerText = `By: ${story.username}`;
+            document.getElementById('story-task').innerText = `Task: ${story.task_name || 'No task'}`;
+            currentStoryIndex = index;
+        }
+    }
+
+    function nextStory() {
+        if (currentStoryIndex < stories.length - 1) {
+            showStory(currentStoryIndex + 1);
+        }
+    }
+
+    function prevStory() {
+        if (currentStoryIndex > 0) {
+            showStory(currentStoryIndex - 1);
+        }
+    }
+
+    // Automatically show the first story
+    document.addEventListener("DOMContentLoaded", () => {
+        if (stories.length > 0) {
+            showStory(0);
+        }
+    });
+</script>
+
+{% endblock %}

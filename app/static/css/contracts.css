@@ -1,0 +1,919 @@
+/* Stories Container */
+.stories-container {
+    padding: 10px;
+    overflow-x: auto;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border-bottom: 10px solid #E4E4E4;
+    scrollbar-width: none !important; /* Hide scrollbar for Firefox */
+    margin-top: 35px;
+}
+
+.stories-container::-webkit-scrollbar {
+    display: none !important; /* Hide scrollbar for WebKit-based browsers (e.g., Chrome, Safari) */
+}
+
+.stories {
+    display: flex;
+    gap: 15px;
+}
+
+.story-border {
+    position: relative;
+    width: 80px; /* Outer circle size */
+    height: 80px;
+    border-radius: 50%; /* Circular shape */
+    background: linear-gradient(#FD4329, #FA1786); /* Gradient border */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.story-inner-wrapper {
+    width: 75px; /* Slightly smaller than outer border */
+    height: 75px;
+    border-radius: 50%;
+    background-color: white; /* White layer */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.story-inner {
+    width: 70px; /* Slightly smaller than the white layer */
+    height: 70px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%; /* Ensures the image is circular */
+    background-color: white; /* Fallback color if no image */
+}
+
+.story-title {
+    margin-top: 5px;
+    margin-bottom:5px;
+    font-size: 12px;
+    color: #333;
+    text-align: center;
+}
+
+
+/* Contracts */
+
+.contracts {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+    /* max-height: 80vh;  */
+    padding-bottom: 80px;
+    
+}
+
+.contract-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 10px;
+    padding-bottom: 0px;
+}
+
+.contract-header {
+    display: flex;
+    align-items: center;
+    gap: 0px;
+}
+
+.contract-header img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+.contract-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.contract-header p {
+    margin: 2px 0;
+    color: gray;
+    font-size: 14px;
+}
+
+.contract-card-header {
+    display: flex;
+    color: black !important;
+    justify-content: space-between;
+}
+
+.contract-card-header p{
+    font-weight: 200 !important; /* Ultra-thin weight */
+    /*font-size: 14px !important;*/
+}
+
+.contract-card-header h2{
+    font-weight: 400;
+}
+
+.contract-card-body {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e1e1e1; /* Set border color */
+    border-left: none; /* Remove the left border */
+    border-top-right-radius: 15px; /* Round the top-right corner */
+    border-bottom-right-radius: 15px; /* Round the bottom-right corner */
+    padding: 7px;
+    width: 100%;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.contract-card-body:active {
+    background-color: rgba(211, 211, 211, 0.2) !important; 
+    text-decoration: none;
+    color:inherit
+}
+
+.contract-card-body:focus,
+.contract-card-body:hover {
+    outline: none; /* Remove browser's default outline */
+    color: inherit; /* Prevent text color from changing */
+    text-decoration: none; /* Prevent underline */
+}
+
+.contract-card-body:visited {
+    color: inherit; /* Inherit the current color from its parent or default */
+    text-decoration: none; /* Ensure no underline appears */
+}
+
+.red-message {
+    font-weight:200;
+}
+
+.unred-message{
+    font-weight: 500;
+}
+
+.time{
+    font-weight:lighter;
+}
+
+.point {
+    color: #FE0063;
+    margin:0px !important;
+    font-weight:bolder;
+}
+
+
+/* Tasks */
+
+.tasks {
+    margin-top: 5px;
+    margin-left: 70px;
+}
+
+.task {
+    display: flex;
+    color: var(--blue);
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    border: 1.5px solid var(--blue);
+    border-radius: 17px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-decoration: none;
+    justify-content: space-between !important;
+}
+
+.task-content {
+    display: flex; /* Enables flexbox for layout */
+    justify-content: space-between; /* Pushes task-left and task-right to opposite ends */
+    align-items: center; /* Vertically aligns the content */
+    position: relative; /* Ensures proper layering */
+    width: 100%; /* Ensures it spans the entire task bar */
+}
+
+.task-right {
+    font-weight: 200;
+    font-size: 14px;
+}
+
+/* ####################### */
+
+.task-content {
+    display: flex;
+    justify-content: space-between; /* Ensures left and right elements stay separate */
+    align-items: center;
+    width: 100%;
+    overflow: hidden; /* Prevents overflow */
+}
+
+.task-left {
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* Allows task name to expand */
+    min-width: 0; /* Important for ellipsis */
+}
+
+/* ✏️ Task Name with Ellipsis */
+.task-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    flex: 1; /* Allows the text to shrink */
+    min-width: 0; /* REQUIRED for ellipsis in flexbox */
+    display: block; /* Ensures it behaves properly inside flex */
+    max-width: 100%; /* Ensures it doesn't expand too much */
+}
+
+/* ⏳ Deadline Stays Fixed */
+.task-right {
+    flex-shrink: 0; /* Prevents deadline from being squashed */
+    font-weight: 200;
+    font-size: 14px;
+    padding-left: 10px;
+}
+
+.task-left i, .task-left span {
+    flex-shrink: 0; /* Prevents checkbox from shrinking */
+}
+
+/* ####################### */
+
+/* Create Contract Modal */
+
+* {
+    box-sizing: border-box;
+}
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+    z-index: 100000;
+    overflow: hidden;
+    font-size: 16px !important;
+}
+
+.modal-content {
+    position: absolute;
+    top: 3%; /* Adjust to leave a small gap at the top */
+    bottom: 0;
+    width: 100%;
+    /* margin-top:-20px; */
+    background: #E6E7EB;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+    overflow-y: auto; /* Allow scrolling for overflow content */
+}
+
+.contract-input-name {
+    display: flex;
+    gap: 10px;
+    background-color: white;
+    justify-content: flex-start;
+    border-radius: 12px;
+    padding: 10px;
+    align-items: center;
+}
+
+input::placeholder {
+    color: var(--placeholder); /* Set your desired color */
+}
+
+input:focus {
+    outline: none; /* Removes the default browser focus outline */
+    border-color: initial; /* Prevents any border color change */
+}
+
+#contract-name {
+    border: none;
+    width: 100%;
+    font-size: 16px; 
+}
+
+.camera {
+    display: inline-flex;
+    align-items: center; 
+    background-color: #DAF2FF;
+    border-radius: 50%;
+    padding: 20px;
+    width: 70px;
+    height: 70px;
+}
+
+.modal-header .close-btn, .next-btn,
+.back-btn, .modal-header .create-btn {
+    background: none;
+    border: none;
+    color: #007bff;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    margin: 0;
+    color: black;
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 10px 0;
+}
+
+.form-group {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+    color: black;
+    font-size: 16px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    font-size: 16px;
+}
+
+.add-task-btn {
+    background: transparent;
+    color: var(--blue);
+    border: none;
+    margin-top: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    -webkit-tap-highlight-color: transparent;
+    height: 30px;
+}
+
+.user {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* HERE NEW */
+
+.task-item {
+    background-color: white;
+    border-radius: 25px;
+    display:flex;
+    justify-content: space-between;
+}
+
+#task-list {
+    margin-top: 10px;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.task-input {
+    flex: 1; /* Make the input take up available space */
+    padding: 10px;
+    border: none !important;
+    outline: none;
+    font-size: 14px;
+}
+
+.frequency-btn {
+    background-color: white; /* Matches the white field while adding contrast */
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    color: black; /* Adjust based on your color scheme */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Space between text and icon */
+    -webkit-tap-highlight-color: transparent;
+
+}
+
+.frequency-btn i {
+    color: #888; /* Optional: Gray arrow color for subtle contrast */
+}
+
+.frequency-btn:hover {
+    background-color: #f0f0f0; /* Slight hover effect */
+}
+
+/* Frequency Form */
+
+/* #frequencyModal .modal-content {
+    background-color: white;
+    border-radius: 20px; 
+    padding: 20px;
+    max-width: 400px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); 
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    animation: fadeIn 0.3s ease; 
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#frequencyModal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#frequencyModal .modal-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333; 
+    margin: 0;
+}
+
+#frequencyModal .back-btn,
+#frequencyModal .done-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    color: #007aff; 
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 12px;
+}
+
+#frequencyModal .done-btn {
+    background-color: #007aff;
+    color: white;
+}
+
+#frequencyModal .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#frequencyModal .frequency-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#frequencyModal .frequency-options label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background: #f9f9f9; 
+    border: 1px solid #e6e6e6;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333; 
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
+}
+
+#frequencyModal .frequency-options label:hover {
+    background: #f1f1f1; 
+    border-color: #d9d9d9;
+}
+
+#frequencyModal .frequency-options input[type="radio"]:checked + span {
+    background-color: #007aff; 
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+#frequencyModal #times-per-week,
+#frequencyModal #specific-date {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e6e6e6;
+    border-radius: 12px;
+    font-size: 16px;
+    background: #f9f9f9;
+    margin-top: 10px;
+}
+
+#frequencyModal .delete-task-btn {
+    background-color: #ff3b30; 
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s ease;
+}
+
+#frequencyModal .delete-task-btn:hover {
+    background-color: #d32f2f; 
+}
+
+/* Responsiveness */
+
+.frequency-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.frequency-options label {
+    display: flex;
+    flex-direction: column; 
+    gap: 5px;
+    padding: 10px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.frequency-options label:hover {
+    background: #f1f1f1;
+    border-color: #ccc;
+}
+
+.expandable-content {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.expandable-content.open {
+    display: flex; /* Display flex when active */
+    animation: expand 0.3s ease-in-out;
+}
+
+@keyframes expand {
+    from {
+        opacity: 0;
+        transform: scaleY(0);
+    }
+    to {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+}
+
+/* Highlight the selected radio option */
+.frequency-options input[type="radio"]:checked + div {
+    font-weight: bold;
+    color: #007aff;
+} */
+
+/* People Search */
+
+
+.section-header {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+/* Visibility Options */
+.visibility-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    margin: 0px;
+}
+
+.option input {
+    display: none; /* Hide native radio button */
+}
+
+.option .option-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white; /* Dark iOS-like background */
+    padding: 12px 16px;
+    border-radius: 10px;
+    width: 100%;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.option .checkmark {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #666;
+    border-radius: 50%;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.option input:checked + .option-content .checkmark {
+    background-color: #007aff;
+    border-color: #007aff;
+}
+
+.option input:checked + .option-content {
+    border-color: #007aff;
+}
+
+/* Search Input */
+#search-user {
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 16px;
+    width: 100%;
+    color: black;
+    background: white;
+    margin-bottom: 15px;
+}
+
+
+
+.user {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; 
+    gap: 10px;
+    padding: 10p 15px;
+    background: white;
+    color: black;
+    font-size: 16px;
+}
+
+.user img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 16px;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: #007aff; /* Default blue background for placeholder */
+    flex-shrink: 0!important;
+}
+
+.user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+    border-radius: 15px !important;
+    background-color: white;
+    overflow: hidden !important;
+}
+
+/* Checkbox Styling */
+.user-checkbox {
+    width:30px; /* Larger size */
+    border: 2px solid #ccc;
+    border-radius: 50%; /* Circle checkbox */
+    cursor: pointer;
+    accent-color: #007aff; /* Blue color */
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-start;
+}
+
+#suggested-users {
+    max-height: 500px; /* Adjust height as needed */
+    overflow-y: auto!important; /* Enable vertical scrolling */
+    padding-right: 10px; /* Optional: Add padding to avoid scrollbar overlap */
+
+}
+
+/* Ensure parent container layout doesn't break */
+.user-list-container {
+    display: flex;
+    flex-direction: column;
+    position: relative; /* Ensure fixed content respects this */
+}
+
+/* KAAaaaaaasadsdadasdsadasdasdasdasdasdasd *//* KAAaaaaaasadsdadasdsadasdasdasdasdasdasd */
+
+
+#contract-expiry {
+    width: 100%;
+    background-color: white;
+    border: none !important;
+    padding: 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+    border-radius: 25px;
+}
+
+/* Add this new CSS class */
+.task-tem {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border: none;
+    padding:10px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+/* Update the contract-expiry input styling */
+#contract-expiry {
+    flex: 1;
+    padding: 25px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    width: 100%;
+    background-color: white;
+    border-radius: 0; /* Remove border radius since parent has it */
+}
+
+
+
+
+/* Frequency Modal Styling */
+#frequencyModal .modal-content {
+    background-color: #F2F2F7; /* iOS system background color */
+    padding: 20px;
+}
+
+#frequencyModal .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#frequencyModal .frequency-options {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+#frequencyModal .frequency-options label {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: white;
+    border: none;
+    border-bottom: 1px solid #E5E5EA; /* iOS separator color */
+    margin: 0;
+    position: relative;
+    cursor: pointer;
+}
+
+#frequencyModal .frequency-options label:last-child {
+    border-bottom: none;
+}
+
+/* Radio input styling */
+#frequencyModal .frequency-options input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border: 2px solid #D1D1D6;
+    border-radius: 50%;
+    margin-right: 15px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+#frequencyModal .frequency-options input[type="radio"]:checked {
+    border-color: #007AFF;
+    background-color: white;
+}
+
+#frequencyModal .frequency-options input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #007AFF;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Additional inputs styling */
+#frequencyModal #times-per-week,
+#frequencyModal #specific-date {
+    margin-left: 37px; /* Aligns with the option text */
+    margin-top: 10px;
+    padding: 12px;
+    border: 1px solid #E5E5EA;
+    border-radius: 10px;
+    font-size: 16px;
+    width: calc(100% - 52px); /* Account for the margin-left */
+    display: none;
+}
+
+/* Delete button styling */
+#frequencyModal .delete-task-btn {
+    margin-top: 20px;
+    background-color: white;
+    color: #FF3B30; /* iOS red */
+    padding: 15px;
+    border: none;
+    border-radius: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    width: 100%;
+}
+
+/* Active state for options */
+#frequencyModal .frequency-options label.active {
+    background-color: #F2F2F7;
+}
+
+/* Header styling */
+#frequencyModal .modal-header {
+    margin: -20px -20px 0;
+    padding: 20px;
+    background: white;
+    border-bottom: 1px solid #E5E5EA;
+}
+
+#frequencyModal .modal-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Back and Done buttons */
+#frequencyModal .back-btn,
+#frequencyModal .done-btn {
+    color: #007AFF;
+    font-size: 17px;
+    font-weight: 500;
+    background: none;
+    border: none;
+    padding: 5px 10px;
+}
+
+#frequencyModal .done-btn {
+    font-weight: 600;
+}
