@@ -31,7 +31,7 @@ To install it on your phone:
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 Note: use the 'main' branch to deploy.
 
